@@ -5,12 +5,10 @@ import {
   DarwinsVoyage,
   GreatLibrary,
   HangingGardens,
-  IsaacNewtonsCollege,
   JsBachsCathedral,
   KingRichardsCrusade,
   Lighthouse,
   MagellansExpedition,
-  SetiProgram,
   ShakespearesTheatre,
   StatueOfLiberty,
 } from '../Wonders';
@@ -29,27 +27,21 @@ import {
   Masonry,
   Railroad,
 } from '@civ-clone/civ2-science/Advances';
-import cityYieldModifier, {
-  newtonsShare,
-  scienceBuildings,
-} from '../Rules/City/yield-modifier';
+import cityYieldModifier from '../Rules/City/yield-modifier';
 import setUp from './lib/setUp';
 import Barbarian from '@civ-clone/base-civilization-barbarian/Barbarian';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import CoastBound from '@civ-clone/base-unit-trait-coast-bound/CoastBound';
 import Happiness from '@civ-clone/base-city-yield-happiness/Happiness';
-import Library from '@civ-clone/base-city-improvement-library/Library';
 import { Movement } from '@civ-clone/core-unit/Yields';
 import Naval from '@civ-clone/base-unit-type-naval/Naval';
 import { PendingEffectRegistry } from '@civ-clone/core-pending-effect';
 import Production from '@civ-clone/base-terrain-yield-production/Production';
 import Research from '@civ-clone/base-city-yield-research/Research';
-import ResearchLab from '@civ-clone/base-city-improvement-researchlab/ResearchLab';
 import Rule from '@civ-clone/core-rule/Rule';
 import Trade from '@civ-clone/base-terrain-yield-trade/Trade';
 import Unhappiness from '@civ-clone/base-city-yield-unhappiness/Unhappiness';
 import Unit from '@civ-clone/core-unit/Unit';
-import University from '@civ-clone/base-city-improvement-university/University';
 import Yield from '@civ-clone/core-yield/Yield';
 import cityBuildingComplete from '../Rules/City/building-complete';
 import cityCost from '../Rules/City/cost';
@@ -232,62 +224,16 @@ describe('city costs', (): void => {
 });
 
 describe('science', (): void => {
-  it('counts a Library, a University, and a Research Lab or SETI once', (): void => {
-    const { city, players, build, registries } = setUp(),
-      here = city(players[0]);
-
-    expect(scienceBuildings(here, registries)).to.equal(0);
-
-    build(new Library(here));
-    build(new University(here));
-
-    expect(scienceBuildings(here, registries)).to.equal(2);
-
-    build(new SetiProgram(city(players[0])));
-
-    expect(scienceBuildings(here, registries)).to.equal(3);
-
-    build(new ResearchLab(here));
-
-    expect(scienceBuildings(here, registries)).to.equal(3);
-    expect(scienceBuildings(city(players[1]), registries)).to.equal(0);
-  });
-
-  it("Isaac Newton's College adds what Civ2's halving takes away, in its city only", (): void => {
-    const { city, players, build, registries } = setUp(),
-      here = city(players[0]),
-      other = city(players[0]),
-      rules = cityYieldModifier(registries),
-      base = [new Research(7)];
-
-    expect(newtonsShare(7, 2)).to.equal(7);
-    expect(newtonsShare(7, 1)).to.equal(4);
-    expect(newtonsShare(7, 3)).to.equal(11);
-
-    build(new IsaacNewtonsCollege(here));
-
-    // No science buildings: nothing to double.
-    expect(total(applied(rules, here, base, base), Research)).to.equal(0);
-
-    build(new Library(here));
-    build(new Library(other));
-
-    expect(total(applied(rules, here, base, base), Research)).to.equal(4);
-    expect(total(applied(rules, other, base, base), Research)).to.equal(0);
-  });
-
   it('the Copernicus Observatory doubles its city’s science, after the rest', (): void => {
     const { city, players, build, registries } = setUp(),
       here = city(players[0]),
       rules = cityYieldModifier(registries),
-      [, copernicus] = rules,
+      [copernicus] = rules,
       yields = [new Research(5), new Research(3)];
 
     build(new CopernicusObservatory(here));
 
-    expect(copernicus.priority().value()).to.be.greaterThan(
-      rules[0].priority().value()
-    );
+    expect(copernicus.priority().value()).to.equal(4000);
     expect(total(applied(rules, here, yields, yields), Research)).to.equal(8);
     expect(
       total(applied(rules, city(players[0]), yields, yields), Research)

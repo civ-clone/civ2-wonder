@@ -22,7 +22,6 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   - **Cure for Cancer:** 1 happy citizen in each of its owner's cities.
   - **Shakespeare's Theatre:** no unhappy citizens in its city.
   - **J. S. Bach's Cathedral:** 2 fewer unhappy in each of its owner's cities.
-  - **Isaac Newton's College:** doubles its city's science buildings' bonus.
   - **Copernicus Observatory:** doubles its city's science, after the rest.
   - **Lighthouse:** +1 move for ships that aren't coast-bound.
   - **Magellan's Expedition:** +2 moves for ships.
@@ -32,17 +31,15 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **Not here, by design:** a Wonder that acts as an improvement in every city is tested with it, at the improvement's
   site (base-wonder's `hasImprovementOrWonder`, in civ2-city-improvement and civ2-unit). That covers Pyramids/Granary,
   Michelangelo's/Cathedral, Women's Suffrage/Police Station, Great Wall/City Walls, SETI/Research Lab, Hoover
-  Dam/Hydro Plant, Sun Tzu's/Barracks, Lighthouse/Port Facility, and the Oracle's Temple. civ2-unit reads the
+  Dam/Hydro Plant, Sun Tzu's/Barracks, Lighthouse/Port Facility, and the Oracle's Temple. civ2-city-improvement also
+  owns Isaac Newton's College (part of the science buildings' bonus), Adam Smith's (upkeep), and registering every
+  improvement, Wonders included, in `cityImprovements` (its `Created` rule), which a lost Wonder's `everBuilt` reads. civ2-unit reads the
   Manhattan Project for nuclear weapons.
 
 ## Not yet (Civ2 M2a deviations and gaps)
 
-- **Lost Wonders need civ2-city-improvement's `Created` rule.** A lost Wonder is never rebuilt, and nuclear weapons
-  stay buildable once the Manhattan Project is lost, because base-wonder's `everBuilt` finds it in `cityImprovements`.
-  Nothing in civ2 registers improvements there yet. Civ1's `Created` rule does, and civ2-city-improvement's will.
-  Until then, a Wonder works only while it stands.
 - **Marco Polo's Embassy** (an embassy with every civilization), **Leonardo's Workshop** (an upgrade a turn),
-  **Adam Smith's Trading Co.** (pays upkeep-1 improvements), **the Eiffel Tower** (reputation and the AI's attitude),
+  **the Eiffel Tower** (reputation and the AI's attitude),
   **the United Nations** and **the Great Wall's diplomacy**: no shape for them yet.
 - **The Great Wall against barbarians** (their attack halved, and doubled against them): no combat hook.
 - **The Manhattan Project's reputation cut**, **the Apollo Program's revealed map and cities**, and **Sun Tzu's
@@ -50,8 +47,8 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **The Lighthouse's safe Triremes:** no shape yet.
 - **Happiness order:** civ2-city-happiness is Civ1-shaped. The Wonders' content comes after martial law (Priority
   4000), and the Hanging Gardens' and Cure for Cancer's happy citizens are city yields, as Civ1's are.
-- **Newton's rounding:** the share is `base × buildings − ⌊base × buildings / 2⌋`. It's exact only if
-  civ2-city-improvement adds the buildings' bonus as one sum, as Civ2 does, not as a separate half for each.
+- **J. S. Bach's tithes:** under Fundamentalism its 2 content become 2 gold (`city_split_trade`), with the tithes
+  civ2-government doesn't model yet.
 - **The Statue of Liberty and an Anarchy already under way:** a revolution's length is fixed when it starts, so a
   Statue completed during Anarchy doesn't shorten it.
 - **The computer players' Wonder choice** is Civ1's (`city_choose_production_wonder_bias` isn't ported).

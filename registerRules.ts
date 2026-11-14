@@ -66,7 +66,6 @@ export const register = (game: Game): void => {
     ),
     ...cityYield(game.playerResearch, game.wonders, game.requirements),
     ...cityYieldModifier({
-      cityImprovementRegistry: game.cityImprovements,
       playerResearchRegistry: game.playerResearch,
       requirementRegistry: game.requirements,
       wonderRegistry: game.wonders,
