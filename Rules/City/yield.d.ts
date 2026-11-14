@@ -1,0 +1,10 @@
+import { PlayerResearchRegistry } from '@civ-clone/core-science/PlayerResearchRegistry';
+import { RequirementRegistry } from '@civ-clone/core-requirement/RequirementRegistry';
+import { WonderRegistry } from '@civ-clone/core-wonder/WonderRegistry';
+import CityYield from '@civ-clone/core-city/Rules/Yield';
+export declare const getRules: (
+  playerResearchRegistry?: PlayerResearchRegistry,
+  wonderRegistry?: WonderRegistry,
+  requirementRegistry?: RequirementRegistry
+) => CityYield[];
+export default getRules;
