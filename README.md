@@ -33,7 +33,8 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   site (base-wonder's `hasImprovementOrWonder`, in civ2-city-improvement and civ2-unit). That covers Pyramids/Granary,
   Michelangelo's/Cathedral, Women's Suffrage/Police Station, Great Wall/City Walls, SETI/Research Lab, Hoover
   Dam/Hydro Plant, Sun Tzu's/Barracks, Lighthouse/Port Facility, and the Oracle's Temple. civ2-city-improvement also
-  owns Isaac Newton's College (part of the science buildings' bonus), Adam Smith's (upkeep), and registering every
+  owns Isaac Newton's College (part of the science buildings' bonus), Adam Smith's (upkeep), J. S. Bach's tithes under
+  Fundamentalism (its `lib/content`; the 2 fewer unhappy stay here), and registering every
   improvement, Wonders included, in `cityImprovements` (its `Created` rule), which a lost Wonder's `everBuilt` reads. civ2-unit reads the
   Manhattan Project for nuclear weapons.
 
@@ -48,8 +49,6 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **The Lighthouse's safe Triremes:** no shape yet.
 - **Happiness order:** civ2-city-happiness is Civ1-shaped. The Wonders' content comes after martial law (Priority
   4000), and the Hanging Gardens' and Cure for Cancer's happy citizens are city yields, as Civ1's are.
-- **J. S. Bach's tithes:** under Fundamentalism its 2 content become 2 gold (`city_split_trade`), with the tithes
-  civ2-government doesn't model yet.
 - **Darwin's Voyage's second completion** waits for the player's next choice of research, as Civilization's does. Civ2
   completes both at once, picking the next research itself (`civ_research_complete` calls `civ_choose_research`).
 - **The Colossus' and King Richard's bonus is a city yield**, worked out square by square through the later steps,
