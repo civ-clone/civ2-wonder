@@ -24,7 +24,14 @@ const register = (game) => {
     game.rules.register((0, buildRules_1.builtOnceRule)('civ2-wonder', game.wonders, game.cityImprovements));
     // Which Wonders a city may build, from the entries in `Requirements`, through the game's `requirements`.
     game.requirements.add((0, buildRules_1.deriveBuildRules)(game.playerResearch, game.wonders, game.cityImprovements), ...Requirements_1.default);
-    game.rules.register(...(0, build_priority_1.default)(game.cities, game.cityBuilds, game.playerResearch, game.units, game.requirements), ...(0, build_cost_1.default)(), ...(0, building_complete_1.default)(game.cityBuilds, game.playerResearch, game.wonders, game.engine, game.pendingEffects), ...(0, cost_1.default)(game.playerResearch, game.wonders, game.requirements), ...(0, lifecycleRules_1.wonderDestroyedRules)(game.wonders), ...(0, lifecycleRules_1.dropBuiltWonderRules)('civ2-wonder', Production_1.default, game.cityBuilds, game.wonders, game.cityImprovements), ...(0, yield_1.default)(game.playerResearch, game.wonders, game.requirements), ...(0, yield_modifier_1.default)({
+    game.rules.register(...(0, build_priority_1.default)(game.cities, game.cityBuilds, game.playerResearch, game.units, game.requirements), ...(0, build_cost_1.default)(), ...(0, building_complete_1.default)(game.cityBuilds, game.playerResearch, game.wonders, game.engine, game.pendingEffects), ...(0, cost_1.default)(game.playerResearch, game.wonders, game.requirements), ...(0, lifecycleRules_1.wonderDestroyedRules)(game.wonders), ...(0, lifecycleRules_1.dropBuiltWonderRules)('civ2-wonder', Production_1.default, game.cityBuilds, game.wonders, game.cityImprovements), ...(0, yield_1.default)({
+        pendingEffects: game.pendingEffects,
+        playerGovernmentRegistry: game.playerGovernments,
+        playerResearchRegistry: game.playerResearch,
+        requirementRegistry: game.requirements,
+        tileImprovementRegistry: game.tileImprovements,
+        wonderRegistry: game.wonders,
+    }), ...(0, yield_modifier_1.default)({
         playerResearchRegistry: game.playerResearch,
         requirementRegistry: game.requirements,
         wonderRegistry: game.wonders,

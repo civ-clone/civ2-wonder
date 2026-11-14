@@ -81,11 +81,11 @@ describe('city yields', (): void => {
       squares = [[new Trade(2)], [new Production(1)], [new Trade(1)]],
       here = city(players[0], squares),
       other = city(players[0], squares),
-      rules = cityYield(
+      rules = cityYield({
         playerResearchRegistry,
         wonderRegistry,
-        requirementRegistry
-      );
+        requirementRegistry,
+      });
 
     expect(total(applied(rules, here), Trade)).to.equal(0);
 
@@ -110,11 +110,11 @@ describe('city yields', (): void => {
       } = setUp(),
       squares = [[new Trade(2)], [new Production(1)], []],
       here = city(players[0], squares),
-      rules = cityYield(
+      rules = cityYield({
         playerResearchRegistry,
         wonderRegistry,
-        requirementRegistry
-      );
+        requirementRegistry,
+      });
 
     build(new KingRichardsCrusade(here));
 
@@ -137,11 +137,11 @@ describe('city yields', (): void => {
       here = city(players[0]),
       other = city(players[0]),
       rival = city(players[1]),
-      rules = cityYield(
+      rules = cityYield({
         playerResearchRegistry,
         wonderRegistry,
-        requirementRegistry
-      );
+        requirementRegistry,
+      });
 
     build(new HangingGardens(here));
 
@@ -369,6 +369,38 @@ describe('the Great Library', (): void => {
     research[1].addAdvance(Electricity);
 
     expect(rule.validate(research[2], masonry)).false;
+  });
+});
+
+describe('the Great Library, for any advance gained', (): void => {
+  it('also fires for an advance given rather than researched (a hut, a treaty, Philosophy), as `addAdvance` processes `Complete`', (): void => {
+    const {
+      ruleRegistry,
+      players,
+      research,
+      city,
+      build,
+      playerResearchRegistry,
+      wonderRegistry,
+      requirementRegistry,
+    } = setUp();
+
+    ruleRegistry.register(
+      ...playerResearchComplete(
+        playerResearchRegistry,
+        wonderRegistry,
+        requirementRegistry
+      )
+    );
+    build(new GreatLibrary(city(players[0])));
+
+    research[1].addAdvance(Masonry);
+
+    expect(research[0].completed(Masonry)).false;
+
+    research[2].addAdvance(Masonry);
+
+    expect(research[0].completed(Masonry)).true;
   });
 });
 

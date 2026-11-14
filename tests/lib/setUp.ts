@@ -38,8 +38,10 @@ export const setUp = () => {
         },
         player: (): Player => player,
         tile: () => ({}),
-        tilesWorked: () =>
-          tileYields.map((yields: Yield[]) => ({ yields: () => yields })),
+        tilesWorked: () => ({
+          entries: () =>
+            tileYields.map((yields: Yield[]) => ({ yields: () => yields })),
+        }),
       }) as TestCity;
     },
     build = <T extends CityImprovement>(improvement: T): T => {

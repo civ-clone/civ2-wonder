@@ -64,7 +64,14 @@ export const register = (game: Game): void => {
       game.wonders,
       game.cityImprovements
     ),
-    ...cityYield(game.playerResearch, game.wonders, game.requirements),
+    ...cityYield({
+      pendingEffects: game.pendingEffects,
+      playerGovernmentRegistry: game.playerGovernments,
+      playerResearchRegistry: game.playerResearch,
+      requirementRegistry: game.requirements,
+      tileImprovementRegistry: game.tileImprovements,
+      wonderRegistry: game.wonders,
+    }),
     ...cityYieldModifier({
       playerResearchRegistry: game.playerResearch,
       requirementRegistry: game.requirements,
