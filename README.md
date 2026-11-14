@@ -12,7 +12,8 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   - It's built once in the world and never again, even once lost with its city.
   - Rivals' builds of it are dropped when it's completed.
   - A Caravan (a unit that `TradeMissions`) can help build one.
-  - The computer players want one as `civ1-wonder`'s do.
+  - The computer players want one as `civ1-wonder`'s do (base-wonder's `wonderPriorityRules`).
+- **History:** `lib/wonderHistory`, every Wonder ever built in RULES.TXT's order, for a Wonders of the World report.
 - **Expiry** (@ENDWONDER): a Wonder stops working once *anyone* has the advance, and is announced obsolete then.
 - **Effects** whose shape the base rules have:
   - **Colossus:** +1 trade on each worked square with trade, in its city.
@@ -36,6 +37,10 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 
 ## Not yet (Civ2 M2a deviations and gaps)
 
+- **Lost Wonders need civ2-city-improvement's `Created` rule.** A lost Wonder is never rebuilt, and nuclear weapons
+  stay buildable once the Manhattan Project is lost, because base-wonder's `everBuilt` finds it in `cityImprovements`.
+  Nothing in civ2 registers improvements there yet. Civ1's `Created` rule does, and civ2-city-improvement's will.
+  Until then, a Wonder works only while it stands.
 - **Marco Polo's Embassy** (an embassy with every civilization), **Leonardo's Workshop** (an upgrade a turn),
   **Adam Smith's Trading Co.** (pays upkeep-1 improvements), **the Eiffel Tower** (reputation and the AI's attitude),
   **the United Nations** and **the Great Wall's diplomacy**: no shape for them yet.

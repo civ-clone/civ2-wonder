@@ -12,6 +12,15 @@ import { expect } from 'chai';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import register from '../registerRules';
+import { WONDERS_IN_ORIGINAL_ORDER, wonderHistory } from '../lib/wonderHistory';
+import City from '@civ-clone/core-city/City';
+import CityBuild from '@civ-clone/core-city-build/CityBuild';
+import CityImprovementRegistry from '@civ-clone/core-city-improvement/CityImprovementRegistry';
+import Naval from '@civ-clone/base-unit-type-naval/Naval';
+import Production from '@civ-clone/base-terrain-yield-production/Production';
+import Unit from '@civ-clone/core-unit/Unit';
+import WonderRegistry from '@civ-clone/core-wonder/WonderRegistry';
+import buildPriority from '../Rules/City/build-priority';
 
 describe('the Wonders', (): void => {
   it('are the 28 of RULES.TXT, each once, in its order', (): void => {
@@ -101,6 +110,45 @@ describe('registerRules', (): void => {
       Object.keys(pkg.dependencies).filter((name) =>
         /^@civ-clone\/(civ1|library)-/.test(name)
       )
+    ).to.deep.equal([]);
+  });
+});
+
+describe('build priority', (): void => {
+  it('never wants the Manhattan Project, and a ship Wonder only with a ship', (): void => {
+    const player = {},
+      city = Object.assign(Object.create(City.prototype), {
+        player: () => player,
+      }),
+      cityBuild = { city: () => city } as unknown as CityBuild,
+      units: Unit[] = [],
+      [rule] = buildPriority(
+        { getByPlayer: () => [city] } as never,
+        undefined,
+        undefined,
+        { getByPlayer: () => units } as never
+      ),
+      shields = [new Production(10)],
+      wants = (Item: unknown): boolean =>
+        rule.validate(cityBuild, Item as never, shields);
+
+    expect(rule.id()).to.equal('civ2-wonder:city/build-priority/wonder');
+    expect(wants(Wonders.Pyramids)).true;
+    expect(wants(Wonders.ManhattanProject)).false;
+    expect(wants(Wonders.Lighthouse)).false;
+
+    units.push(Object.create(Naval.prototype));
+
+    expect(wants(Wonders.Lighthouse)).true;
+    expect(wants(Wonders.MagellansExpedition)).true;
+  });
+});
+
+describe('wonderHistory', (): void => {
+  it('lists Wonders in RULES.TXT order', (): void => {
+    expect(WONDERS_IN_ORIGINAL_ORDER).to.equal(wonderTypes);
+    expect(
+      wonderHistory(new WonderRegistry(), new CityImprovementRegistry())
     ).to.deep.equal([]);
   });
 });

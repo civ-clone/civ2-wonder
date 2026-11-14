@@ -4,8 +4,11 @@ import { PlayerResearchRegistry } from '@civ-clone/core-science/PlayerResearchRe
 import { RequirementRegistry } from '@civ-clone/core-requirement/RequirementRegistry';
 import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import BuildPriority from '@civ-clone/core-city-build/Rules/BuildPriority';
-export declare const wonderPriority = 1.5;
-export declare const wonderShields = 5;
+/**
+ * How much a city on Auto, or a computer player, wants a Wonder: base-wonder's rule with civ1-wonder's numbers, until
+ *  the AI's own Wonder choice (OpenCiv2 `city_choose_production_wonder_bias`) is ported. The Lighthouse and Magellan's
+ *  only help ships; the Manhattan Project lets every player build nuclear weapons, so is never wanted.
+ */
 export declare const getRules: (
   cityRegistry?: CityRegistry,
   cityBuildRegistry?: CityBuildRegistry,
