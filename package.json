@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@civ-clone/civ2-asset-extractor": "github:civ-clone/civ2-asset-extractor",
+    "@civ-clone/core-terrain": "^0.1.4",
     "@types/chai": "^4.0.0",
     "@types/mocha": "^10.0.0",
     "@types/node": "^16.0.0",

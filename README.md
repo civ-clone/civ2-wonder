@@ -16,7 +16,8 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **History:** `lib/wonderHistory`, every Wonder ever built in RULES.TXT's order, for a Wonders of the World report.
 - **Expiry** (@ENDWONDER): a Wonder stops working once *anyone* has the advance, and is announced obsolete then.
 - **Effects** whose shape the base rules have:
-  - **Colossus:** +1 trade on each worked square with trade, in its city.
+  - **Colossus:** +1 trade on each worked square with trade, in its city: land squares with trade too, as OpenCiv2's
+    `city_tile_yield` does, although the game's player-facing descriptions say ocean squares only.
   - **King Richard's Crusade:** +1 shield on each worked square, in its city.
   - Both bonuses go through the square's later steps, as `city_tile_yield` adds them first (`lib/squareBonus`): a railroad's half again (shields), the penalty below Monarchy (none while celebrating), the Republic's bonus, then pollution. So under Despotism a 2-trade ocean square stays at 2.
   - **Hanging Gardens:** 1 happy citizen in each of its owner's cities, 3 in its own.

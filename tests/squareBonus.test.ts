@@ -14,6 +14,8 @@ import World from '@civ-clone/core-world/World';
 import Yield from '@civ-clone/core-yield/Yield';
 import { Pollution, Railroad } from '@civ-clone/civ2-world/TileImprovements';
 import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
+import { LEADER_CELEBRATION } from '@civ-clone/civ2-city-happiness/lib/cityStatus';
+import { PendingEffect } from '@civ-clone/core-pending-effect';
 import cityYield from '../Rules/City/yield';
 import { throughLaterSteps } from '../lib/squareBonus';
 import { expect } from 'chai';
@@ -95,6 +97,52 @@ describe('a Wonder’s +1 on a square, through the government’s steps', (): vo
 
     govern(Monarchy, forest);
     expect(of(here, Production)).to.equal(1);
+  });
+
+  it("King Richard's on a railroad forest: +1 under Monarchy and under Despotism (the railroad's half isn't counted twice)", (): void => {
+    const forest = square(Forest),
+      here = city(forest);
+
+    game.tileImprovements.register(new Railroad(forest, game.rules));
+    game.wonders.register(new KingRichardsCrusade(here));
+
+    govern(Monarchy, forest);
+    // 2, and the railroad's half again: 3.
+    expect(total(forest, Production)).to.equal(3);
+    expect(of(here, Production)).to.equal(1);
+
+    govern(Despotism, forest);
+    // 3 less the penalty: 2. With the +1: 3, half again 4, less the penalty 3.
+    expect(total(forest, Production)).to.equal(2);
+    expect(of(here, Production)).to.equal(1);
+  });
+
+  it('the Colossus on a polluted ocean: +1 (pollution halves 3 to 2, not 2 to 1 twice)', (): void => {
+    const ocean = square(Ocean),
+      here = city(ocean);
+
+    game.tileImprovements.register(new Pollution(ocean, game.rules));
+    game.wonders.register(new Colossus(here));
+
+    govern(Monarchy, ocean);
+    expect(total(ocean, Trade)).to.equal(1);
+    expect(of(here, Trade)).to.equal(1);
+  });
+
+  it('the Colossus in a celebrating city under Despotism: +1, as celebrating escapes the penalty', (): void => {
+    const ocean = square(Ocean),
+      here = city(ocean);
+
+    game.wonders.register(new Colossus(here));
+    govern(Despotism, ocean);
+
+    expect(of(here, Trade)).to.equal(0);
+
+    game.pendingEffects.register(
+      new PendingEffect(LEADER_CELEBRATION, here as never)
+    );
+
+    expect(of(here, Trade)).to.equal(1);
   });
 });
 
