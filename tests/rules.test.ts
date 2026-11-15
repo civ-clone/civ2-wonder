@@ -120,7 +120,11 @@ describe('build priority', (): void => {
       city = Object.assign(Object.create(City.prototype), {
         player: () => player,
       }),
-      cityBuild = { city: () => city } as unknown as CityBuild,
+      auto = { on: false },
+      cityBuild = {
+        city: () => city,
+        auto: () => auto.on,
+      } as unknown as CityBuild,
       units: Unit[] = [],
       [rule] = buildPriority(
         { getByPlayer: () => [city] } as never,
@@ -141,6 +145,14 @@ describe('build priority', (): void => {
 
     expect(wants(Wonders.Lighthouse)).true;
     expect(wants(Wonders.MagellansExpedition)).true;
+    expect(
+      rule.process(cityBuild, Wonders.Pyramids as never, shields)
+    ).to.equal(1.5);
+
+    // A city on Auto is ranked by civ2-city's own scores, on another scale.
+    auto.on = true;
+
+    expect(wants(Wonders.Pyramids)).false;
   });
 });
 

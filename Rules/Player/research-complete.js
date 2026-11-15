@@ -4,6 +4,9 @@ exports.getRules = exports.GREAT_LIBRARY_HOLDERS = void 0;
 const PlayerResearchRegistry_1 = require("@civ-clone/core-science/PlayerResearchRegistry");
 const RequirementRegistry_1 = require("@civ-clone/core-requirement/RequirementRegistry");
 const WonderRegistry_1 = require("@civ-clone/core-wonder/WonderRegistry");
+const leonardo_1 = require("../../lib/leonardo");
+const Complete_1 = require("@civ-clone/core-science/Rules/Complete");
+const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Wonders_1 = require("../../Wonders");
 const greatLibraryRules_1 = require("@civ-clone/base-wonder/lib/greatLibraryRules");
 const isBarbarian_1 = require("@civ-clone/base-civilization-barbarian/isBarbarian");
@@ -12,11 +15,34 @@ const isBarbarian_1 = require("@civ-clone/base-civilization-barbarian/isBarbaria
  *  richardpenman/civ2@49f26ec, counts civilizations 1 to 7: never the barbarians).
  */
 exports.GREAT_LIBRARY_HOLDERS = 2;
-const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance, wonderRegistry = WonderRegistry_1.instance, requirementRegistry = RequirementRegistry_1.instance) => (0, greatLibraryRules_1.greatLibraryRules)({
-    GreatLibrary: Wonders_1.GreatLibrary,
-    holders: exports.GREAT_LIBRARY_HOLDERS,
-    counts: (playerResearch) => !(0, isBarbarian_1.default)(playerResearch.player()),
-}, playerResearchRegistry, wonderRegistry, requirementRegistry);
+/**
+ * Leonardo's Workshop upgrades its owner's units each time they're given an advance, however they got it, before the
+ *  Great Library looks at it (OpenCiv2 `civ_give_advance` calls `civ_leonardo_upgrade` just ahead of its Great Library
+ *  check). The advance is already theirs, so discovering the one that expires the Wonder upgrades nothing.
+ */
+const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance, wonderRegistry = WonderRegistry_1.instance, requirementRegistry = RequirementRegistry_1.instance, leonardoRegistries = {}) => {
+    const upgrade = (0, leonardo_1.default)({
+        playerResearchRegistry,
+        requirementRegistry,
+        wonderRegistry,
+        ...leonardoRegistries,
+    });
+    return [
+        new Complete_1.default('civ2-wonder:player/research-complete/leonardos-workshop', new Effect_1.default((playerResearch) => {
+            const player = playerResearch.player();
+            upgrade(player);
+            // The advance taken from a captured city: `city_capture` then runs its own pass (`Rules/City/captured`).
+            if ((0, leonardo_1.stolenAdvanceArrived)(player)) {
+                upgrade(player);
+            }
+        })),
+        ...(0, greatLibraryRules_1.greatLibraryRules)({
+            GreatLibrary: Wonders_1.GreatLibrary,
+            holders: exports.GREAT_LIBRARY_HOLDERS,
+            counts: (playerResearch) => !(0, isBarbarian_1.default)(playerResearch.player()),
+        }, playerResearchRegistry, wonderRegistry, requirementRegistry),
+    ];
+};
 exports.getRules = getRules;
 exports.default = exports.getRules;
 //# sourceMappingURL=research-complete.js.map
