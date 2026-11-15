@@ -19,6 +19,7 @@
     "ts:compile": "tsc --build tsconfig.json"
   },
   "devDependencies": {
+    "@civ-clone/base-unit-healing": "^0.1.0",
     "@civ-clone/civ2-asset-extractor": "github:civ-clone/civ2-asset-extractor",
     "@civ-clone/core-terrain": "^0.1.4",
     "@types/chai": "^4.0.0",
