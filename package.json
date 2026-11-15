@@ -81,7 +81,7 @@
     "@civ-clone/civ2-rules": "github:civ-clone/civ2-rules",
     "@civ-clone/civ2-science": "github:civ-clone/civ2-science",
     "@civ-clone/civ2-unit": "github:civ-clone/civ2-unit#feat/m2c",
-    "@civ-clone/civ2-world": "github:civ-clone/civ2-world",
+    "@civ-clone/civ2-world": "github:civ-clone/civ2-world#feat/m2c",
     "@civ-clone/core-city": "^0.1.25",
     "@civ-clone/core-city-build": "^0.1.22",
     "@civ-clone/core-city-improvement": "^0.1.8",
