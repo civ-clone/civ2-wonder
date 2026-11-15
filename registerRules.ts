@@ -26,6 +26,7 @@ import { freeResearchStartedRules } from '@civ-clone/base-wonder/lib/freeResearc
 import governmentsAvailability from './Rules/Governments/availability';
 import playerAnarchyDuration from './Rules/Player/anarchy-duration';
 import playerResearchComplete from './Rules/Player/research-complete';
+import promotionChance from './Rules/Unit/promotion-chance';
 import unitYield from './Rules/Unit/yield';
 
 export const register = (game: Game): void => {
@@ -115,6 +116,7 @@ export const register = (game: Game): void => {
       game.rules
     ),
     ...unitYield(game.wonders, game.playerResearch, game.requirements),
+    ...promotionChance(game.wonders, game.playerResearch, game.requirements),
     ...wonderObsoleteRules(game.engine)
   );
 };

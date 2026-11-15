@@ -19,6 +19,7 @@
     "ts:compile": "tsc --build tsconfig.json"
   },
   "devDependencies": {
+    "@civ-clone/base-unit-healing": "^0.1.0",
     "@civ-clone/civ2-asset-extractor": "github:civ-clone/civ2-asset-extractor",
     "@civ-clone/core-terrain": "^0.1.4",
     "@types/chai": "^4.0.0",
@@ -40,6 +41,7 @@
     "@civ-clone/base-terrain-yield-trade": "^0.1.0",
     "@civ-clone/base-unit-trait-coast-bound": "^0.1.0",
     "@civ-clone/base-unit-type-naval": "^0.1.0",
+    "@civ-clone/base-unit-veteran-promotion": "^0.1.0",
     "@civ-clone/base-wonder": "^0.1.1",
     "@civ-clone/base-wonder-adamsmithstradingcompany": "^0.1.0",
     "@civ-clone/base-wonder-apolloprogram": "^0.1.0",
