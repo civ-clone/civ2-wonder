@@ -2,6 +2,7 @@ import { PlayerResearchRegistry } from '@civ-clone/core-science/PlayerResearchRe
 import { RequirementRegistry } from '@civ-clone/core-requirement/RequirementRegistry';
 import { WonderRegistry } from '@civ-clone/core-wonder/WonderRegistry';
 import UnitYield from '@civ-clone/core-unit/Rules/Yield';
+export declare const BEFORE_DAMAGE = 2500;
 export declare const getRules: (
   wonderRegistry?: WonderRegistry,
   playerResearchRegistry?: PlayerResearchRegistry,

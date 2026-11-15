@@ -15,7 +15,7 @@ import { isA } from '@civ-clone/core-unit/traits';
 import CoastBound from '@civ-clone/base-unit-trait-coast-bound/CoastBound';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import { Low } from '@civ-clone/core-rule/Priorities';
+import Priority from '@civ-clone/core-rule/Priority';
 import { Movement } from '@civ-clone/core-unit/Yields';
 import Naval from '@civ-clone/base-unit-type-naval/Naval';
 import Unit from '@civ-clone/core-unit/Unit';
@@ -24,7 +24,10 @@ import Yield from '@civ-clone/core-yield/Yield';
 import { playerHasWonder } from '@civ-clone/base-wonder/lib/hasWonder';
 
 // OpenCiv2 `unit_max_moves` (richardpenman/civ2@49f26ec), for a sea unit, in whole moves (the game counts in thirds):
-//  Magellan's Expedition gives 2 more, and the Lighthouse 1 more to one that isn't coast-bound.
+//  Magellan's Expedition gives 2 more, and the Lighthouse 1 more to one that isn't coast-bound. Both come before a
+//  damaged ship's moves are cut (civ2-unit's `Low` damaged-movement rule), as in the original, whichever package is
+//  loaded first: they run at `BEFORE_DAMAGE`, between the `Normal` rules that set movement and the `Low` ones.
+export const BEFORE_DAMAGE = 2500;
 export const getRules = (
   wonderRegistry: WonderRegistry = wonderRegistryInstance,
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance,
@@ -38,7 +41,7 @@ export const getRules = (
   return [
     new UnitYield(
       'civ2-wonder:unit/yield/lighthouse',
-      new Low(),
+      new Priority(BEFORE_DAMAGE),
       isMovement,
       isNaval,
       new Criterion((unit: Unit): boolean => !unit.hasTrait(CoastBound)),
@@ -52,7 +55,7 @@ export const getRules = (
     ),
     new UnitYield(
       'civ2-wonder:unit/yield/magellans-expedition',
-      new Low(),
+      new Priority(BEFORE_DAMAGE),
       isMovement,
       isNaval,
       playerHasWonder(

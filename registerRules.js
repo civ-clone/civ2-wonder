@@ -19,6 +19,7 @@ const freeResearch_1 = require("@civ-clone/base-wonder/lib/freeResearch");
 const availability_1 = require("./Rules/Governments/availability");
 const anarchy_duration_1 = require("./Rules/Player/anarchy-duration");
 const research_complete_1 = require("./Rules/Player/research-complete");
+const promotion_chance_1 = require("./Rules/Unit/promotion-chance");
 const yield_2 = require("./Rules/Unit/yield");
 const register = (game) => {
     game.rules.register((0, buildRules_1.builtOnceRule)('civ2-wonder', game.wonders, game.cityImprovements));
@@ -38,7 +39,7 @@ const register = (game) => {
     }), ...(0, availability_1.default)(game.playerResearch, game.wonders, game.requirements), ...(0, anarchy_duration_1.default)(game.playerResearch, game.wonders, game.requirements), ...(0, research_complete_1.default)(game.playerResearch, game.wonders, game.requirements));
     // Wonders going obsolete (@ENDWONDER): announced on the first discovery; base-wonder's `isObsolete` reads the entries.
     game.requirements.add((0, obsoleteRules_1.deriveObsoleteRules)(game.playerResearch, game.rules, game.wonders), ...Requirements_1.obsoletedBy);
-    game.rules.register(...(0, freeResearch_1.freeResearchStartedRules)(RuleIds_1.DARWINS_VOYAGE, game.pendingEffects), ...(0, helpBuildWonder_1.helpBuildWonderActionRules)('civ2-wonder', game.cities, game.cityBuilds, game.rules), ...(0, helpBuildWonder_1.wonderHelpedRules)('civ2-wonder', Production_1.default, game.cityBuilds, game.rules), ...(0, yield_2.default)(game.wonders, game.playerResearch, game.requirements), ...(0, lifecycleRules_1.wonderObsoleteRules)(game.engine));
+    game.rules.register(...(0, freeResearch_1.freeResearchStartedRules)(RuleIds_1.DARWINS_VOYAGE, game.pendingEffects), ...(0, helpBuildWonder_1.helpBuildWonderActionRules)('civ2-wonder', game.cities, game.cityBuilds, game.rules), ...(0, helpBuildWonder_1.wonderHelpedRules)('civ2-wonder', Production_1.default, game.cityBuilds, game.rules), ...(0, yield_2.default)(game.wonders, game.playerResearch, game.requirements), ...(0, promotion_chance_1.default)(game.wonders, game.playerResearch, game.requirements), ...(0, lifecycleRules_1.wonderObsoleteRules)(game.engine));
 };
 exports.register = register;
 // The plugin loader imports each package for this side effect.

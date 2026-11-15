@@ -40,6 +40,7 @@
     "@civ-clone/base-terrain-yield-trade": "^0.1.0",
     "@civ-clone/base-unit-trait-coast-bound": "^0.1.0",
     "@civ-clone/base-unit-type-naval": "^0.1.0",
+    "@civ-clone/base-unit-veteran-promotion": "^0.1.0",
     "@civ-clone/base-wonder": "^0.1.1",
     "@civ-clone/base-wonder-adamsmithstradingcompany": "^0.1.0",
     "@civ-clone/base-wonder-apolloprogram": "^0.1.0",
