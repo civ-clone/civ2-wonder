@@ -26,7 +26,9 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   - **J. S. Bach's Cathedral:** 2 fewer unhappy in each of its owner's cities.
   - **Copernicus Observatory:** doubles its city's science, after the rest.
   - **Lighthouse:** +1 move for ships that aren't coast-bound.
-  - **Magellan's Expedition:** +2 moves for ships.
+  - **Magellan's Expedition:** +2 moves for ships. Both are added before a damaged ship is slowed (civ2-unit's `Low`
+    rule), whichever package loads first.
+  - **Sun Tzu's War Academy:** every winner of its owner's becomes a veteran (`PromotionChance` 1).
   - **Great Library:** an advance known by 2 civilizations, barbarians not counted, however they gained it (`addAdvance` processes `Complete` too, so huts, treaties and Philosophy count, as in `civ_give_advance`).
   - **Darwin's Voyage:** two research completions.
   - **Statue of Liberty:** any government, and Anarchy ends next turn.
@@ -45,9 +47,8 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   **the Eiffel Tower** (reputation and the AI's attitude),
   **the United Nations** and **the Great Wall's diplomacy**: no shape for them yet.
 - **The Great Wall against barbarians** (their attack halved, and doubled against them): no combat hook.
-- **The Manhattan Project's reputation cut**, **the Apollo Program's revealed map and cities**, and **Sun Tzu's
-  veterans after a win**: no shape yet.
-- **The Lighthouse's safe Triremes:** no shape yet.
+- **The Manhattan Project's reputation cut** and **the Apollo Program's revealed map and cities**: no shape yet.
+- **The Lighthouse's safe Triremes** are civ2-unit's (its coast-bound odds), not here.
 - **Happiness order:** civ2-city-happiness is Civ1-shaped. The Wonders' content comes after martial law (Priority
   4000), and the Hanging Gardens' and Cure for Cancer's happy citizens are city yields, as Civ1's are.
 - **Darwin's Voyage's second completion** waits for the player's next choice of research, as Civilization's does. Civ2
