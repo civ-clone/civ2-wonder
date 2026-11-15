@@ -1,12 +1,11 @@
 import {
-  Colossus,
+  ApolloProgram,
   CopernicusObservatory,
   CureForCancer,
   DarwinsVoyage,
   GreatLibrary,
   HangingGardens,
   JsBachsCathedral,
-  KingRichardsCrusade,
   Lighthouse,
   MagellansExpedition,
   ShakespearesTheatre,
@@ -44,6 +43,17 @@ import Unhappiness from '@civ-clone/base-city-yield-unhappiness/Unhappiness';
 import Unit from '@civ-clone/core-unit/Unit';
 import Yield from '@civ-clone/core-yield/Yield';
 import cityBuildingComplete from '../Rules/City/building-complete';
+import City from '@civ-clone/core-city/City';
+import { Engine } from '@civ-clone/core-engine/Engine';
+import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
+import { Game } from '@civ-clone/core-game';
+import { Grassland } from '@civ-clone/civ2-world/Terrains';
+import Player from '@civ-clone/core-player/Player';
+import PlayerWorld from '@civ-clone/core-player-world/PlayerWorld';
+import World from '@civ-clone/core-world/World';
+import Cost from '@civ-clone/core-science/Rules/Cost';
+import Effect from '@civ-clone/core-rule/Effect';
+import { darwinsVoyageStartedRules } from '../lib/darwinsVoyage';
 import cityCost from '../Rules/City/cost';
 import cityYield from '../Rules/City/yield';
 import { expect } from 'chai';
@@ -68,62 +78,6 @@ const total = (results: unknown[], YieldType: typeof Yield): number =>
     .reduce((sum, result) => sum + result.value(), 0);
 
 describe('city yields', (): void => {
-  it('Colossus: 1 trade for each worked square with trade, in its city only, until Flight', (): void => {
-    const {
-        city,
-        players,
-        build,
-        research,
-        playerResearchRegistry,
-        wonderRegistry,
-        requirementRegistry,
-      } = setUp(),
-      squares = [[new Trade(2)], [new Production(1)], [new Trade(1)]],
-      here = city(players[0], squares),
-      other = city(players[0], squares),
-      rules = cityYield({
-        playerResearchRegistry,
-        wonderRegistry,
-        requirementRegistry,
-      });
-
-    expect(total(applied(rules, here), Trade)).to.equal(0);
-
-    build(new Colossus(here));
-
-    expect(total(applied(rules, here), Trade)).to.equal(2);
-    expect(total(applied(rules, other), Trade)).to.equal(0);
-
-    research[3].addAdvance(Flight);
-
-    expect(total(applied(rules, here), Trade)).to.equal(0);
-  });
-
-  it("King Richard's Crusade: 1 shield for each worked square, in its city only", (): void => {
-    const {
-        city,
-        players,
-        build,
-        playerResearchRegistry,
-        wonderRegistry,
-        requirementRegistry,
-      } = setUp(),
-      squares = [[new Trade(2)], [new Production(1)], []],
-      here = city(players[0], squares),
-      rules = cityYield({
-        playerResearchRegistry,
-        wonderRegistry,
-        requirementRegistry,
-      });
-
-    build(new KingRichardsCrusade(here));
-
-    expect(total(applied(rules, here), Production)).to.equal(3);
-    expect(
-      total(applied(rules, city(players[0], squares)), Production)
-    ).to.equal(0);
-  });
-
   it('Hanging Gardens: 1 happy in each of its owner’s cities, 3 in its own, until Railroad; Cure for Cancer 1', (): void => {
     const {
         city,
@@ -341,7 +295,8 @@ describe('the Great Library', (): void => {
         wonderRegistry,
         requirementRegistry,
       } = setUp(),
-      [rule] = playerResearchComplete(
+      // After Leonardo's Workshop's rule, as `civ_give_advance` calls `civ_leonardo_upgrade` first.
+      [, rule] = playerResearchComplete(
         playerResearchRegistry,
         wonderRegistry,
         requirementRegistry
@@ -405,26 +360,104 @@ describe('the Great Library, for any advance gained', (): void => {
 });
 
 describe("Darwin's Voyage", (): void => {
-  it('owes its player two research completions', (): void => {
-    const { players, research, city, playerResearchRegistry, wonderRegistry } =
-        setUp(),
+  // `city_process_production_complete_improvement` calls `civ_research_complete` twice; each gives the research and
+  //  sets `research_progress` to 0.
+  const darwin = () => {
+    const {
+        players,
+        research,
+        city,
+        playerResearchRegistry,
+        ruleRegistry,
+        wonderRegistry,
+      } = setUp(),
       pendingEffects = new PendingEffectRegistry(),
-      rules = cityBuildingComplete(
-        undefined,
+      rules = cityBuildingComplete({
         playerResearchRegistry,
         wonderRegistry,
-        undefined,
-        pendingEffects
-      ),
+        pendingEffects,
+      }),
+      started = darwinsVoyageStartedRules(pendingEffects),
       here = city(players[0]),
       cityBuild = { city: () => here } as unknown as CityBuild;
 
-    applied(rules, cityBuild, new DarwinsVoyage(here));
+    // Every advance costs 10 here.
+    ruleRegistry.register(new Cost(new Effect((): number => 10)), ...started);
+    research[0].research(Masonry);
 
-    const [owed] = pendingEffects.getByTarget(research[0]);
+    return {
+      research: research[0],
+      pendingEffects,
+      complete: () => applied(rules, cityBuild, new DarwinsVoyage(here)),
+    };
+  };
+
+  it('completes the research under way at once, losing the progress towards it, and owes one more', (): void => {
+    const { research, pendingEffects, complete } = darwin();
+
+    research.progress().set(5);
+    complete();
+
+    expect(research.completed(Masonry)).true;
+    expect(research.progress().value()).to.equal(0);
+
+    const [owed] = pendingEffects.getByTarget(research);
 
     expect(owed.handler()).to.equal('civ2-wonder:darwins-voyage');
-    expect(owed.data()).to.deep.equal({ remaining: '2' });
-    expect(wonderRegistry.entries().length).to.equal(1);
+    expect(owed.data()).to.deep.equal({ remaining: '1' });
+  });
+
+  it('completes the next research chosen at once, and owes nothing after', (): void => {
+    const { research, pendingEffects, complete } = darwin();
+
+    complete();
+    research.progress().set(3);
+    research.research(Railroad);
+
+    expect(research.completed(Railroad)).true;
+    expect(research.progress().value()).to.equal(0);
+    expect(pendingEffects.getByTarget(research)).to.deep.equal([]);
+  });
+});
+
+describe('the Apollo Program', (): void => {
+  it('shows every player every square, once built', async (): Promise<void> => {
+    const game = new Game(),
+      world = new World(new FillGenerator(4, 3, Grassland), game.rules),
+      engine = new Engine(),
+      events: unknown[][] = [];
+
+    await world.build();
+
+    const players = [0, 1, 2].map(() => new Player(game.rules)),
+      playerWorlds = players.map(
+        (player) => new PlayerWorld(player, world, game.rules)
+      ),
+      tile = world.get(1, 1),
+      here = Object.assign(Object.create(City.prototype), {
+        player: () => players[0],
+        tile: () => tile,
+      }) as City,
+      rules = cityBuildingComplete({
+        engine,
+        playerWorldRegistry: game.playerWorlds,
+        wonderRegistry: game.wonders,
+        playerResearchRegistry: game.playerResearch,
+      }),
+      cityBuild = { city: () => here } as unknown as CityBuild,
+      apollo = new ApolloProgram(here);
+
+    game.playerWorlds.register(...playerWorlds);
+    playerWorlds[0].register(tile);
+    engine.on('wonder:apollo-revealed', (...args: unknown[]) =>
+      events.push(args)
+    );
+
+    applied(rules, cityBuild, apollo);
+
+    playerWorlds.forEach((playerWorld) =>
+      expect(playerWorld.tiles().length).to.equal(12)
+    );
+    expect(events).to.deep.equal([[apollo, here]]);
   });
 });

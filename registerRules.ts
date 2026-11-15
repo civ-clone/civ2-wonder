@@ -13,7 +13,6 @@ import {
 } from '@civ-clone/base-wonder/lib/helpBuildWonder';
 import { Game, defaultGame } from '@civ-clone/core-game';
 import buildRequirements, { obsoletedBy } from './Requirements';
-import { DARWINS_VOYAGE } from './RuleIds';
 import Production from '@civ-clone/base-terrain-yield-production/Production';
 import cityBuildCost from './Rules/City/build-cost';
 import cityBuildPriority from './Rules/City/build-priority';
@@ -22,7 +21,11 @@ import cityCost from './Rules/City/cost';
 import cityYield from './Rules/City/yield';
 import cityYieldModifier from './Rules/City/yield-modifier';
 import { deriveObsoleteRules } from '@civ-clone/base-wonder/lib/obsoleteRules';
-import { freeResearchStartedRules } from '@civ-clone/base-wonder/lib/freeResearch';
+import cityCaptured from './Rules/City/captured';
+import cityTileYield from './Rules/City/tile-yield';
+import { darwinsVoyageStartedRules } from './lib/darwinsVoyage';
+import upgradedRules from '@civ-clone/base-unit-upgrade/lib/upgradedRules';
+import Veteran from '@civ-clone/base-unit-improvement-veteran/UnitImprovements/Veteran';
 import governmentsAvailability from './Rules/Governments/availability';
 import playerAnarchyDuration from './Rules/Player/anarchy-duration';
 import playerResearchComplete from './Rules/Player/research-complete';
@@ -30,6 +33,17 @@ import promotionChance from './Rules/Unit/promotion-chance';
 import unitYield from './Rules/Unit/yield';
 
 export const register = (game: Game): void => {
+  // What Leonardo's Workshop needs to upgrade units: the game's own transport registry and rules go to a unit that
+  //  becomes a transport (base-unit-upgrade's `changeType`).
+  const leonardoRegistries = {
+    playerResearchRegistry: game.playerResearch,
+    requirementRegistry: game.requirements,
+    ruleRegistry: game.rules,
+    transportRegistry: game.transports,
+    unitRegistry: game.units,
+    wonderRegistry: game.wonders,
+  };
+
   game.rules.register(
     builtOnceRule('civ2-wonder', game.wonders, game.cityImprovements)
   );
@@ -49,13 +63,14 @@ export const register = (game: Game): void => {
       game.requirements
     ),
     ...cityBuildCost(),
-    ...cityBuildingComplete(
-      game.cityBuilds,
-      game.playerResearch,
-      game.wonders,
-      game.engine,
-      game.pendingEffects
-    ),
+    ...cityBuildingComplete({
+      ...leonardoRegistries,
+      cityBuildRegistry: game.cityBuilds,
+      engine: game.engine,
+      pendingEffects: game.pendingEffects,
+      playerWorldRegistry: game.playerWorlds,
+    }),
+    ...cityCaptured(leonardoRegistries, game.rules),
     ...cityCost(game.playerResearch, game.wonders, game.requirements),
     ...wonderDestroyedRules(game.wonders),
     ...dropBuiltWonderRules(
@@ -66,11 +81,14 @@ export const register = (game: Game): void => {
       game.cityImprovements
     ),
     ...cityYield({
-      pendingEffects: game.pendingEffects,
-      playerGovernmentRegistry: game.playerGovernments,
       playerResearchRegistry: game.playerResearch,
       requirementRegistry: game.requirements,
-      tileImprovementRegistry: game.tileImprovements,
+      wonderRegistry: game.wonders,
+    }),
+    // The Colossus and King Richard's Crusade, at their steps of each worked square's yields.
+    ...cityTileYield({
+      playerResearchRegistry: game.playerResearch,
+      requirementRegistry: game.requirements,
       wonderRegistry: game.wonders,
     }),
     ...cityYieldModifier({
@@ -91,8 +109,15 @@ export const register = (game: Game): void => {
     ...playerResearchComplete(
       game.playerResearch,
       game.wonders,
-      game.requirements
-    )
+      game.requirements,
+      leonardoRegistries
+    ),
+    // An upgraded unit is no longer a veteran, and the client is told (`civ_leonardo_upgrade` clears `UNITF_VETERAN`).
+    ...upgradedRules('civ2-wonder:unit/upgraded', {
+      loses: [Veteran],
+      engine: game.engine,
+      unitImprovementRegistry: game.unitImprovements,
+    })
   );
 
   // Wonders going obsolete (@ENDWONDER): announced on the first discovery; base-wonder's `isObsolete` reads the entries.
@@ -102,7 +127,7 @@ export const register = (game: Game): void => {
   );
 
   game.rules.register(
-    ...freeResearchStartedRules(DARWINS_VOYAGE, game.pendingEffects),
+    ...darwinsVoyageStartedRules(game.pendingEffects),
     ...helpBuildWonderActionRules(
       'civ2-wonder',
       game.cities,
