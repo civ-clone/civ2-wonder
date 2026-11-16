@@ -9,11 +9,8 @@ import {
   EIFFEL_TOWER_CAPTURED_RULE,
   EIFFEL_TOWER_COMPLETE_RULE,
   MANHATTAN_PROJECT_COMPLETE_RULE,
-  MARCO_POLOS_EMBASSY_CAPTURED_RULE,
-  MARCO_POLOS_EMBASSY_COMPLETE_RULE,
+  EIFFEL_TOWER_CONTACT_RULE,
   MARCO_POLOS_EMBASSY_EMBASSY_RULE,
-  UNITED_NATIONS_CAPTURED_RULE,
-  UNITED_NATIONS_COMPLETE_RULE,
   UNITED_NATIONS_EMBASSY_RULE,
 } from '../RuleIds';
 import {
@@ -69,7 +66,10 @@ import HasEmbassy from '@civ-clone/base-diplomacy/Rules/HasEmbassy';
 import Player from '@civ-clone/core-player/Player';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import isBarbarian from '@civ-clone/base-civilization-barbarian/isBarbarian';
-import makeContact from '@civ-clone/base-diplomacy-interaction-contact/makeContact';
+import Contact from '@civ-clone/base-diplomacy-interaction-contact/Contact';
+import Created from '@civ-clone/core-diplomacy/Rules/Interaction/Created';
+import Interaction from '@civ-clone/core-diplomacy/Interaction';
+import Low from '@civ-clone/core-rule/Priorities/Low';
 
 export interface DiplomacyRegistries {
   interactionRegistry?: InteractionRegistry;
@@ -95,12 +95,14 @@ export const embassyWonders: [typeof Wonder, string][] = [
  *  maps. Expired wonders count as absent (base-wonder's `playerOwnsWonder`, with civ2-wonder's expiries in the
  *  requirements).
  * - **Marco Polo's Embassy and the United Nations** act as an embassy with every other player for their owner
- *   (base-diplomacy's `HasEmbassy`; they set no `Embassy`, as the original sets no flag), and their owner makes contact
- *   with every other player (base-diplomacy-interaction-contact's `makeContact`) when it is built or captured.
+ *   (base-diplomacy's `HasEmbassy`; they set no `Embassy`, as the original sets no flag). They make no contact.
  * - **The Eiffel Tower** (`civ_apply_eiffel_tower`, `civ.cpp:6794-6812`), once for each player, when it is built or
  *   captured: its owner's reputation is halved (rounded down), every other player's attitude to it falls by 25, and
  *   every vendetta held against it ends. That it was applied is kept as a `PendingEffect` (`EIFFEL_TOWER_APPLIED`) on
- *   the player, which is never discharged, as the original's `CIVF_EIFFEL_APPLIED`.
+ *   the player, which is never discharged, as the original's `CIVF_EIFFEL_APPLIED`. The original lowers every
+ *   civilization's attitude, met or not; here an attitude is seeded when a pair meets (civ2-diplomacy), so a player
+ *   that meets the owner later has its seeded attitude to it lowered by 25 then (`EIFFEL_TOWER_CONTACT_RULE`, after
+ *   the seeding).
  * - **The Manhattan Project** (`city_production.cpp:2435-2438`), when it is built: every player's reputation becomes
  *   (reputation + 1) / 2, rounded down, at most 6.
  *
@@ -115,7 +117,12 @@ export const getRules = ({
   ruleRegistry = ruleRegistryInstance,
   turn = turnInstance,
   wonderRegistry = wonderRegistryInstance,
-}: DiplomacyRegistries = {}): (HasEmbassy | BuildingComplete | Captured)[] => {
+}: DiplomacyRegistries = {}): (
+  | HasEmbassy
+  | BuildingComplete
+  | Captured
+  | Created
+)[] => {
   const relations = { interactionRegistry, ruleRegistry, turn },
     others = (player: Player): Player[] =>
       playerRegistry
@@ -123,25 +130,15 @@ export const getRules = ({
         .filter(
           (other: Player): boolean => other !== player && !isBarbarian(other)
         ),
-    contactEveryone = (player: Player): void => {
-      if (isBarbarian(player)) {
-        return;
-      }
-
-      others(player).forEach((other: Player): void => {
-        makeContact(interactionRegistry, player, other, ruleRegistry, turn);
-      });
-    },
+    applied = (player: Player): boolean =>
+      pendingEffectRegistry
+        .getByTarget(player)
+        .some(
+          (pendingEffect: PendingEffect): boolean =>
+            pendingEffect.handler() === EIFFEL_TOWER_APPLIED
+        ),
     applyEiffelTower = (player: Player): void => {
-      if (
-        isBarbarian(player) ||
-        pendingEffectRegistry
-          .getByTarget(player)
-          .some(
-            (pendingEffect: PendingEffect): boolean =>
-              pendingEffect.handler() === EIFFEL_TOWER_APPLIED
-          )
-      ) {
+      if (isBarbarian(player) || applied(player)) {
         return;
       }
 
@@ -198,44 +195,44 @@ export const getRules = ({
         )
     ),
 
-    ...(
-      [
-        [MarcoPolosEmbassy, MARCO_POLOS_EMBASSY_COMPLETE_RULE],
-        [UnitedNations, UNITED_NATIONS_COMPLETE_RULE],
-      ] as [typeof Wonder, string][]
-    ).map(
-      ([WonderType, id]): BuildingComplete =>
-        new BuildingComplete(
-          id,
-          new Criterion(built(WonderType)),
-          new Effect((cityBuild: CityBuild): void =>
-            contactEveryone(cityBuild.city().player())
-          )
-        )
-    ),
-
-    ...(
-      [
-        [MarcoPolosEmbassy, MARCO_POLOS_EMBASSY_CAPTURED_RULE],
-        [UnitedNations, UNITED_NATIONS_CAPTURED_RULE],
-      ] as [typeof Wonder, string][]
-    ).map(
-      ([WonderType, id]): Captured =>
-        new Captured(
-          id,
-          holds(WonderType),
-          new Effect((city: City, captor: Player): void =>
-            contactEveryone(captor)
-          )
-        )
-    ),
-
     new BuildingComplete(
       EIFFEL_TOWER_COMPLETE_RULE,
       new Criterion(built(EiffelTower)),
       new Effect((cityBuild: CityBuild): void =>
         applyEiffelTower(cityBuild.city().player())
       )
+    ),
+
+    // A pair meeting after the Eiffel Tower's effect was applied to one of them: the other likes it 25 better, as it
+    //  would have had their attitudes been kept before they met. `Low`, so after civ2-diplomacy seeds them.
+    new Created(
+      EIFFEL_TOWER_CONTACT_RULE,
+      new Low(),
+      new Criterion(
+        (interaction: Interaction): boolean => interaction instanceof Contact
+      ),
+      new Effect((interaction: Interaction): void => {
+        const [player, other] = interaction.players();
+
+        if (player === undefined || other === undefined || player === other) {
+          return;
+        }
+
+        const attitudes = attitude(relations);
+
+        [
+          [player, other],
+          [other, player],
+        ].forEach(([holder, toward]: Player[]): void => {
+          if (
+            applied(toward) &&
+            !isBarbarian(holder) &&
+            attitudes.get(holder, toward) !== undefined
+          ) {
+            attitudes.adjust(holder, toward, -25, 'eiffel-tower');
+          }
+        });
+      })
     ),
 
     // `city_capture_aftermath` (`city.cpp:4919-4921`): the captor of the Eiffel Tower's city gets its effect, once.

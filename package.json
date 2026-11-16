@@ -21,6 +21,8 @@
   "devDependencies": {
     "@civ-clone/base-unit-healing": "^0.1.0",
     "@civ-clone/civ2-asset-extractor": "github:civ-clone/civ2-asset-extractor",
+    "@civ-clone/core-civilization": "^0.1.9",
+    "@civ-clone/core-save-game": "^0.1.24",
     "@civ-clone/core-terrain": "^0.1.4",
     "@civ-clone/core-terrain-feature": "^0.1.5",
     "@civ-clone/library-diplomacy": "^0.1.5",

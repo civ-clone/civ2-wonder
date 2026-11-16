@@ -12,6 +12,18 @@ import City from '@civ-clone/core-city/City';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import { Communism } from '@civ-clone/civ2-science/Advances';
 import Contact from '@civ-clone/base-diplomacy-interaction-contact/Contact';
+import Civilization from '@civ-clone/core-civilization/Civilization';
+import Created from '@civ-clone/core-diplomacy/Rules/Interaction/Created';
+import Criterion from '@civ-clone/core-rule/Criterion';
+import Effect from '@civ-clone/core-rule/Effect';
+import { EIFFEL_TOWER_APPLIED } from '../RuleIds';
+import { Game } from '@civ-clone/core-game';
+import Interaction from '@civ-clone/core-diplomacy/Interaction';
+import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import { gameForLoad } from '@civ-clone/core-save-game/gameForLoad';
+import { hydrate } from '@civ-clone/core-save-game/hydrate';
+import { registerClasses } from '@civ-clone/core-save-game/registerClasses';
+import { save } from '@civ-clone/core-save-game/save';
 import InteractionRegistry from '@civ-clone/core-diplomacy/InteractionRegistry';
 import { Never } from '@civ-clone/core-diplomacy/Expiries';
 import { PendingEffectRegistry } from '@civ-clone/core-pending-effect';
@@ -145,29 +157,19 @@ describe('diplomatic wonders', (): void => {
         ).equal(WonderType === UnitedNations);
       });
 
-      it('makes contact between its builder or captor and every other player but the barbarians, once a pair', (): void => {
+      it('makes no contact', (): void => {
         const {
-          players: [owner, a, b, captor],
-          barbarian,
+          players: [owner, a],
           interactionRegistry,
           complete,
           capture,
         } = game();
 
-        interactionRegistry.register(new Contact(owner, a));
-
         const wonder = complete(owner, WonderType);
 
-        expect(contacts(interactionRegistry, owner, a)).equal(1);
-        expect(contacts(interactionRegistry, owner, b)).equal(1);
-        expect(contacts(interactionRegistry, owner, captor)).equal(1);
-        expect(contacts(interactionRegistry, owner, barbarian)).equal(0);
-        expect(contacts(interactionRegistry, a, b)).equal(0);
+        capture(wonder, a);
 
-        capture(wonder, captor);
-
-        expect(contacts(interactionRegistry, captor, a)).equal(1);
-        expect(contacts(interactionRegistry, captor, b)).equal(1);
+        expect(contacts(interactionRegistry, owner, a)).equal(0);
       });
     });
   }
@@ -240,6 +242,119 @@ describe('diplomatic wonders', (): void => {
 
       expect(attitude(relations).get(a, owner)).equal(55);
       expect(reputation(relations).get(owner)).equal(2);
+    });
+    it('lowers by 25 the attitude, as civ2-diplomacy seeds it, of a player that meets its owner later', (): void => {
+      const {
+        players: [owner, a, b],
+        interactionRegistry,
+        ruleRegistry,
+        relations,
+        complete,
+      } = game();
+
+      // civ2-diplomacy's seeding, registered after civ2-wonder's rule: `Low` still runs it after.
+      ruleRegistry.register(
+        new Created(
+          new Criterion(
+            (interaction: Interaction): boolean =>
+              interaction instanceof Contact
+          ),
+          new Effect((interaction: Interaction): void => {
+            const [x, y] = interaction.players();
+
+            attitude(relations).set(x, y, 60);
+            attitude(relations).set(y, x, 60);
+          })
+        )
+      );
+
+      complete(owner, EiffelTower);
+
+      interactionRegistry.register(new Contact(a, owner, ruleRegistry));
+      interactionRegistry.register(new Contact(a, b, ruleRegistry));
+
+      expect(attitude(relations).get(a, owner)).equal(35);
+      expect(attitude(relations).get(owner, a)).equal(60);
+      expect(attitude(relations).get(a, b)).equal(60);
+      expect(attitude(relations).get(b, a)).equal(60);
+    });
+
+    it('keeps the mark that it was applied through a save', (): void => {
+      class Greek extends Civilization {}
+      class English extends Civilization {}
+
+      const play = new Game(),
+        owner = new Player(play.rules),
+        other = new Player(play.rules);
+
+      play.engine.registerPlugins({ '@civ-clone/civ2-wonder': 'test' });
+      registerClasses(play);
+      play.classes.register(Greek, English);
+      owner.setCivilization(new Greek());
+      other.setCivilization(new English());
+      play.players.register(owner, other);
+
+      const rulesFor = (target: Game) =>
+          diplomacy({
+            interactionRegistry: target.interactions,
+            pendingEffectRegistry: target.pendingEffects,
+            playerRegistry: target.players,
+            playerResearchRegistry: target.playerResearch,
+            requirementRegistry: target.requirements,
+            ruleRegistry: target.rules,
+            turn: target.turn,
+            wonderRegistry: target.wonders,
+          }),
+        completeFor = (target: Game, player: Player): void => {
+          const city = Object.assign(Object.create(City.prototype), {
+            player: () => player,
+          });
+
+          target.rules.process(
+            BuildingComplete,
+            Object.assign(Object.create(CityBuild.prototype), {
+              city: () => city,
+            }) as CityBuild,
+            new EiffelTower(city, target.rules)
+          );
+        },
+        relationsOf = (target: Game) => ({
+          interactionRegistry: target.interactions,
+          ruleRegistry: target.rules,
+          turn: target.turn,
+        });
+
+      play.rules.register(...rulesFor(play));
+      reputation(relationsOf(play)).set(owner, 6);
+      completeFor(play, owner);
+
+      expect(reputation(relationsOf(play)).get(owner)).equal(3);
+
+      const loaded = gameForLoad({
+        classes: play.classes,
+        engine: play.engine,
+        rules: new RuleRegistry(),
+      });
+
+      hydrate(save(play, { name: 'test', createdAt: 0 }), loaded);
+      loaded.rules.register(...rulesFor(loaded));
+
+      const [loadedOwner, loadedOther] = loaded.players.entries();
+
+      expect(
+        loaded.pendingEffects
+          .getByTarget(loadedOwner)
+          .map((pendingEffect) => pendingEffect.handler())
+      ).eql([EIFFEL_TOWER_APPLIED]);
+
+      completeFor(loaded, loadedOwner);
+      completeFor(loaded, loadedOther);
+
+      // Not again for its owner; once for the other.
+      expect(reputation(relationsOf(loaded)).get(loadedOwner)).equal(3);
+      expect(
+        loaded.pendingEffects.getByTarget(loadedOther).map((p) => p.handler())
+      ).eql([EIFFEL_TOWER_APPLIED]);
     });
   });
 

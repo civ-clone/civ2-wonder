@@ -48,10 +48,10 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
     reveals it to all, not only its builder), and `wonder:apollo-revealed` is emitted.
   - **Statue of Liberty:** any government, and Anarchy ends next turn.
   - **Diplomacy** (`lib/diplomacy`, M2d): **Marco Polo's Embassy** and **the United Nations** act as an embassy with
-    every other player for their owner (base-diplomacy's `HasEmbassy`, setting no `Embassy`), until they expire, and
-    their builder or captor makes contact with every other player. **The Eiffel Tower**, once for each player that
-    builds or captures it (`civ_apply_eiffel_tower`): its reputation is halved, every other player that has met it
-    likes it 25 better, and every vendetta against it ends. **The Manhattan Project**, when it's built: every player's
+    every other player for their owner (base-diplomacy's `HasEmbassy`, setting no `Embassy`), until they expire; they
+    make no contact. **The Eiffel Tower**, once for each player that builds or captures it (`civ_apply_eiffel_tower`):
+    its reputation is halved, every other player likes it 25 better (one that meets it later, once civ2-diplomacy has
+    seeded its attitude), and every vendetta against it ends. That it was applied is saved as a `PendingEffect`. **The Manhattan Project**, when it's built: every player's
     reputation becomes (reputation + 1) / 2, at most 6. The rest of these wonders' diplomacy is civ2-diplomacy's, which
     reads who owns them itself: the talks (Marco Polo's dearer tribute, the United Nations' and the Great Wall's peace,
     overruled refusals, no tribute and warmer talks), share maps without an alliance, the United Nations' Senate, and

@@ -12,24 +12,15 @@ export declare const MARCO_POLOS_EMBASSY_EMBASSY_RULE =
 /** The United Nations acts as an embassy with every other player for its owner (base-diplomacy's `HasEmbassy`). */
 export declare const UNITED_NATIONS_EMBASSY_RULE =
   'civ2-wonder:player/has-embassy/united-nations';
-/** Marco Polo's Embassy's builder makes contact with every other player. */
-export declare const MARCO_POLOS_EMBASSY_COMPLETE_RULE =
-  'civ2-wonder:city/building-complete/marco-polos-embassy';
-/** The United Nations' builder makes contact with every other player. */
-export declare const UNITED_NATIONS_COMPLETE_RULE =
-  'civ2-wonder:city/building-complete/united-nations';
-/** Marco Polo's Embassy's captor makes contact with every other player. */
-export declare const MARCO_POLOS_EMBASSY_CAPTURED_RULE =
-  'civ2-wonder:city/captured/marco-polos-embassy';
-/** The United Nations' captor makes contact with every other player. */
-export declare const UNITED_NATIONS_CAPTURED_RULE =
-  'civ2-wonder:city/captured/united-nations';
 /** The Eiffel Tower's effect on its builder's reputation, the others' attitudes and their vendettas. */
 export declare const EIFFEL_TOWER_COMPLETE_RULE =
   'civ2-wonder:city/building-complete/eiffel-tower';
 /** The same for its captor, once for each player. */
 export declare const EIFFEL_TOWER_CAPTURED_RULE =
   'civ2-wonder:city/captured/eiffel-tower';
+/** A player that meets the Eiffel Tower's owner after its effect was applied likes it 25 better. */
+export declare const EIFFEL_TOWER_CONTACT_RULE =
+  'civ2-wonder:interaction/created/eiffel-tower';
 /** The `PendingEffect` handler key that marks a player the Eiffel Tower's effect has been applied to (never discharged). */
 export declare const EIFFEL_TOWER_APPLIED = 'civ2-wonder:eiffel-tower-applied';
 /** The Manhattan Project's effect on every player's reputation. */

@@ -10,6 +10,7 @@ import BuildingComplete from '@civ-clone/core-city-build/Rules/BulidingComplete'
 import Captured from '@civ-clone/core-city/Rules/Captured';
 import HasEmbassy from '@civ-clone/base-diplomacy/Rules/HasEmbassy';
 import Wonder from '@civ-clone/core-wonder/Wonder';
+import Created from '@civ-clone/core-diplomacy/Rules/Interaction/Created';
 export interface DiplomacyRegistries {
   interactionRegistry?: InteractionRegistry;
   pendingEffectRegistry?: PendingEffectRegistry;
@@ -29,12 +30,14 @@ export declare const embassyWonders: [typeof Wonder, string][];
  *  maps. Expired wonders count as absent (base-wonder's `playerOwnsWonder`, with civ2-wonder's expiries in the
  *  requirements).
  * - **Marco Polo's Embassy and the United Nations** act as an embassy with every other player for their owner
- *   (base-diplomacy's `HasEmbassy`; they set no `Embassy`, as the original sets no flag), and their owner makes contact
- *   with every other player (base-diplomacy-interaction-contact's `makeContact`) when it is built or captured.
+ *   (base-diplomacy's `HasEmbassy`; they set no `Embassy`, as the original sets no flag). They make no contact.
  * - **The Eiffel Tower** (`civ_apply_eiffel_tower`, `civ.cpp:6794-6812`), once for each player, when it is built or
  *   captured: its owner's reputation is halved (rounded down), every other player's attitude to it falls by 25, and
  *   every vendetta held against it ends. That it was applied is kept as a `PendingEffect` (`EIFFEL_TOWER_APPLIED`) on
- *   the player, which is never discharged, as the original's `CIVF_EIFFEL_APPLIED`.
+ *   the player, which is never discharged, as the original's `CIVF_EIFFEL_APPLIED`. The original lowers every
+ *   civilization's attitude, met or not; here an attitude is seeded when a pair meets (civ2-diplomacy), so a player
+ *   that meets the owner later has its seeded attitude to it lowered by 25 then (`EIFFEL_TOWER_CONTACT_RULE`, after
+ *   the seeding).
  * - **The Manhattan Project** (`city_production.cpp:2435-2438`), when it is built: every player's reputation becomes
  *   (reputation + 1) / 2, rounded down, at most 6.
  *
@@ -49,5 +52,10 @@ export declare const getRules: ({
   ruleRegistry,
   turn,
   wonderRegistry,
-}?: DiplomacyRegistries) => (HasEmbassy | BuildingComplete | Captured)[];
+}?: DiplomacyRegistries) => (
+  | HasEmbassy
+  | BuildingComplete
+  | Captured
+  | Created
+)[];
 export default getRules;
