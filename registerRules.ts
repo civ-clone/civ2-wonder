@@ -20,6 +20,7 @@ import cityBuildingComplete from './Rules/City/building-complete';
 import cityCost from './Rules/City/cost';
 import cityYield from './Rules/City/yield';
 import cityYieldModifier from './Rules/City/yield-modifier';
+import diplomacy from './lib/diplomacy';
 import { deriveObsoleteRules } from '@civ-clone/base-wonder/lib/obsoleteRules';
 import cityCaptured from './Rules/City/captured';
 import cityTileYield from './Rules/City/tile-yield';
@@ -142,7 +143,18 @@ export const register = (game: Game): void => {
     ),
     ...unitYield(game.wonders, game.playerResearch, game.requirements),
     ...promotionChance(game.wonders, game.playerResearch, game.requirements),
-    ...wonderObsoleteRules(game.engine)
+    ...wonderObsoleteRules(game.engine),
+    // Marco Polo's, the United Nations, the Eiffel Tower and the Manhattan Project in diplomacy.
+    ...diplomacy({
+      interactionRegistry: game.interactions,
+      pendingEffectRegistry: game.pendingEffects,
+      playerRegistry: game.players,
+      playerResearchRegistry: game.playerResearch,
+      requirementRegistry: game.requirements,
+      ruleRegistry: game.rules,
+      turn: game.turn,
+      wonderRegistry: game.wonders,
+    })
   );
 };
 

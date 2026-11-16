@@ -13,6 +13,7 @@ const building_complete_1 = require("./Rules/City/building-complete");
 const cost_1 = require("./Rules/City/cost");
 const yield_1 = require("./Rules/City/yield");
 const yield_modifier_1 = require("./Rules/City/yield-modifier");
+const diplomacy_1 = require("./lib/diplomacy");
 const obsoleteRules_1 = require("@civ-clone/base-wonder/lib/obsoleteRules");
 const captured_1 = require("./Rules/City/captured");
 const tile_yield_1 = require("./Rules/City/tile-yield");
@@ -67,7 +68,18 @@ const register = (game) => {
     }));
     // Wonders going obsolete (@ENDWONDER): announced on the first discovery; base-wonder's `isObsolete` reads the entries.
     game.requirements.add((0, obsoleteRules_1.deriveObsoleteRules)(game.playerResearch, game.rules, game.wonders), ...Requirements_1.obsoletedBy);
-    game.rules.register(...(0, darwinsVoyage_1.darwinsVoyageStartedRules)(game.pendingEffects), ...(0, helpBuildWonder_1.helpBuildWonderActionRules)('civ2-wonder', game.cities, game.cityBuilds, game.rules), ...(0, helpBuildWonder_1.wonderHelpedRules)('civ2-wonder', Production_1.default, game.cityBuilds, game.rules), ...(0, yield_2.default)(game.wonders, game.playerResearch, game.requirements), ...(0, promotion_chance_1.default)(game.wonders, game.playerResearch, game.requirements), ...(0, lifecycleRules_1.wonderObsoleteRules)(game.engine));
+    game.rules.register(...(0, darwinsVoyage_1.darwinsVoyageStartedRules)(game.pendingEffects), ...(0, helpBuildWonder_1.helpBuildWonderActionRules)('civ2-wonder', game.cities, game.cityBuilds, game.rules), ...(0, helpBuildWonder_1.wonderHelpedRules)('civ2-wonder', Production_1.default, game.cityBuilds, game.rules), ...(0, yield_2.default)(game.wonders, game.playerResearch, game.requirements), ...(0, promotion_chance_1.default)(game.wonders, game.playerResearch, game.requirements), ...(0, lifecycleRules_1.wonderObsoleteRules)(game.engine), 
+    // Marco Polo's, the United Nations, the Eiffel Tower and the Manhattan Project in diplomacy.
+    ...(0, diplomacy_1.default)({
+        interactionRegistry: game.interactions,
+        pendingEffectRegistry: game.pendingEffects,
+        playerRegistry: game.players,
+        playerResearchRegistry: game.playerResearch,
+        requirementRegistry: game.requirements,
+        ruleRegistry: game.rules,
+        turn: game.turn,
+        wonderRegistry: game.wonders,
+    }));
 };
 exports.register = register;
 // The plugin loader imports each package for this side effect.

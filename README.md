@@ -47,6 +47,15 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   - **Apollo Program:** when it's completed, every player sees every square of the map (`wonder_apollo_reveal_map`
     reveals it to all, not only its builder), and `wonder:apollo-revealed` is emitted.
   - **Statue of Liberty:** any government, and Anarchy ends next turn.
+  - **Diplomacy** (`lib/diplomacy`, M2d): **Marco Polo's Embassy** and **the United Nations** act as an embassy with
+    every other player for their owner (base-diplomacy's `HasEmbassy`, setting no `Embassy`), until they expire; they
+    make no contact. **The Eiffel Tower**, once for each player that builds or captures it (`civ_apply_eiffel_tower`):
+    its reputation is halved, every other player likes it 25 better (one that meets it later, once civ2-diplomacy has
+    seeded its attitude), and every vendetta against it ends. That it was applied is saved as a `PendingEffect`. **The Manhattan Project**, when it's built: every player's
+    reputation becomes (reputation + 1) / 2, at most 6. The rest of these wonders' diplomacy is civ2-diplomacy's, which
+    reads who owns them itself: the talks (Marco Polo's dearer tribute, the United Nations' and the Great Wall's peace,
+    overruled refusals, no tribute and warmer talks), share maps without an alliance, the United Nations' Senate, and
+    the Eiffel Tower's recovery and patience. civ2-unit hides Establish Embassy from the United Nations' owner.
 - **Not here, by design:** a Wonder that acts as an improvement in every city is tested with it, at the improvement's
   site (base-wonder's `hasImprovementOrWonder`, in civ2-city-improvement and civ2-unit). That covers Pyramids/Granary,
   Michelangelo's/Cathedral, Women's Suffrage/Police Station, Great Wall/City Walls, SETI/Research Lab, Hoover
@@ -58,10 +67,8 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 
 ## Not yet (Civ2 M2a deviations and gaps)
 
-- **Marco Polo's Embassy** (an embassy with every civilization), **the Eiffel Tower** (reputation and the AI's attitude),
-  **the United Nations** and **the Great Wall's diplomacy**: no shape for them yet.
 - **The Great Wall against barbarians** (their attack halved, and doubled against them): no combat hook.
-- **The Manhattan Project's reputation cut** and **the Apollo Program's spaceship parts**: no shape yet (M2d, M2e).
+- **The Apollo Program's spaceship parts**: no shape yet (M2e).
 - **Leonardo's Workshop and a city given in a treaty** (`network_parley`'s city transfer upgrades for the new owner
   too): no city changes hands by treaty yet.
 - **The Lighthouse's safe Triremes** are civ2-unit's (its coast-bound odds), not here.
