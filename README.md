@@ -45,7 +45,9 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
     original, so a unit can go two steps. The wait isn't saved: a game saved while the captor chooses loses the pass. Once anyone knows Automobile it does nothing, including for the advance
     that expires it. Clients hear `unit:upgraded` for each unit.
   - **Apollo Program:** when it's completed, every player sees every square of the map (`wonder_apollo_reveal_map`
-    reveals it to all, not only its builder), and `wonder:apollo-revealed` is emitted.
+    reveals it to all, not only its builder), and `wonder:apollo-revealed` is emitted. Its spaceship gate is
+    civ2-spaceship's: once anyone has built it, even if it's lost since, every city may build spaceship parts
+    (`civ2-spaceship:city/build/requires-apollo`), and every player gets a ship to put them in.
   - **Statue of Liberty:** any government, and Anarchy ends next turn.
   - **Diplomacy** (`lib/diplomacy`, M2d): **Marco Polo's Embassy** and **the United Nations** act as an embassy with
     every other player for their owner (base-diplomacy's `HasEmbassy`, setting no `Embassy`), until they expire; they
@@ -68,7 +70,6 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 ## Not yet (Civ2 M2a deviations and gaps)
 
 - **The Great Wall against barbarians** (their attack halved, and doubled against them): no combat hook.
-- **The Apollo Program's spaceship parts**: no shape yet (M2e).
 - **Leonardo's Workshop and a city given in a treaty** (`network_parley`'s city transfer upgrades for the new owner
   too): no city changes hands by treaty yet.
 - **The Lighthouse's safe Triremes** are civ2-unit's (its coast-bound odds), not here.
