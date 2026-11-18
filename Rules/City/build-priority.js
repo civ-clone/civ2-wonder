@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.manhattanProjectRules = exports.wantsManhattanProject = exports.MANHATTAN_PROJECT_BIAS = exports.NEVER_WANTED = exports.getRules = void 0;
+exports.manhattanProjectRules = exports.wantsManhattanProject = exports.manhattanProjectBias = exports.NEVER_WANTED = exports.getRules = void 0;
 const CityBuildRegistry_1 = require("@civ-clone/core-city-build/CityBuildRegistry");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Wonders_1 = require("../../Wonders");
@@ -8,6 +8,8 @@ const PlayerResearchRegistry_1 = require("@civ-clone/core-science/PlayerResearch
 const RequirementRegistry_1 = require("@civ-clone/core-requirement/RequirementRegistry");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
 const Aggressive_1 = require("@civ-clone/base-leader-trait-aggression/Aggression/Aggressive");
+const Civilized_1 = require("@civ-clone/base-leader-trait-militarism/Militarism/Civilized");
+const Militaristic_1 = require("@civ-clone/base-leader-trait-militarism/Militarism/Militaristic");
 const BuildPriority_1 = require("@civ-clone/core-city-build/Rules/BuildPriority");
 const Rocketry_1 = require("@civ-clone/base-science-advance-rocketry/Rocketry");
 const isHuman_1 = require("@civ-clone/base-difficulty/lib/isHuman");
@@ -38,38 +40,56 @@ exports.getRules = getRules;
 // Below anything a computer player's city would build: what `manhattanProjectRules` gives the Manhattan Project for a
 //  player that doesn't want it, so that it isn't built at all.
 exports.NEVER_WANTED = -1000;
-// What `manhattanProjectRules` adds for a player that wants the Manhattan Project, on top of the Wonder priority every
-//  Wonder gets: the original ranks it ahead of other Wonders for an aggressive, militaristic leader (its score, lowest
-//  wanted most, less the leader's attack attitude and twice its civilize attitude), so here it scores twice a Wonder's.
-exports.MANHATTAN_PROJECT_BIAS = buildPriority_1.wonderPriority;
+// What `manhattanProjectRules` adds for a player that wants the Manhattan Project, by its leader's civilize attitude
+//  (militaristic −1, normal 0, civilized 1): the original adds `civilize × 2 − attack` to its score (lowest wanted
+//  most), so an aggressive (attack 1) leader's is 3 better than a plain Wonder's when militaristic, 1 better when
+//  normal and 1 worse when civilized. Here that's half a Wonder priority for each point: 2.25, 0.75 and −0.75, on top of
+//  the Wonder priority's 1.5.
+const manhattanProjectBias = (civilize) => (buildPriority_1.wonderPriority * (1 - 2 * civilize)) / 2;
+exports.manhattanProjectBias = manhattanProjectBias;
 /**
  * Whether a computer player wants the Manhattan Project, which lets every player build nuclear weapons: its leader's
- *  attack attitude is aggressive, it knows Rocketry, and no person who knows Rocketry is weaker than it (OpenCiv2
- *  `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`, where a weaker person with Rocketry rules it
- *  out). The original scores it for any leader, more for a militaristic and aggressive one; here only an aggressive
- *  leader wants it at all.
+ *  attack attitude is aggressive, it knows Rocketry, and no person still in the game who knows Rocketry is weaker than
+ *  it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`, where a weaker person with
+ *  Rocketry rules it out). The original scores it for any leader; here only an aggressive leader wants it at all.
+ *  Strength is base's `militaryPower` (attack and defence of all the player's units), not the original's stored
+ *  military strength.
  */
+// The leader's civilize attitude: −1 militaristic, 1 civilized, 0 otherwise.
+const civilizeOf = (traitRegistry, player) => {
+    const traits = (0, leaderTraits_1.default)(traitRegistry, player);
+    return traits.some((trait) => trait instanceof Militaristic_1.default)
+        ? -1
+        : traits.some((trait) => trait instanceof Civilized_1.default)
+            ? 1
+            : 0;
+};
 const wantsManhattanProject = ({ clientRegistry, playerRegistry, playerResearchRegistry, ruleRegistry, traitRegistry, unitRegistry, }, player) => {
     const knowsRocketry = (other) => playerResearchRegistry.getByPlayer(other).completed(Rocketry_1.default), power = (other) => (0, strength_1.militaryPower)(unitRegistry.getByPlayer(other), ruleRegistry);
+    let own = null;
     return ((0, leaderTraits_1.default)(traitRegistry, player).some((trait) => trait instanceof Aggressive_1.default) &&
         knowsRocketry(player) &&
-        !playerRegistry
-            .entries()
-            .some((other) => other !== player &&
+        !playerRegistry.entries().some((other) => other !== player &&
             (0, isHuman_1.default)(other, clientRegistry) &&
+            // A person still in the game: one destroyed has no units, and would always count as weaker.
+            unitRegistry.getByPlayer(other).length > 0 &&
             knowsRocketry(other) &&
-            power(other) < power(player)));
+            power(other) < (own !== null && own !== void 0 ? own : (own = power(player)))));
 };
 exports.wantsManhattanProject = wantsManhattanProject;
 /**
  * `civ2-wonder:city/build-priority/manhattan-project`: for a city not on Auto, the Manhattan Project scores
- *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `MANHATTAN_PROJECT_BIAS` more than
- *  `getRules`' Wonder priority for one that does.
+ *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `manhattanProjectBias` for one that
+ *  does. The bias stands on its own: `getRules`' Wonder priority adds 1.5 where its own criteria hold (the city makes 5
+ *  shields or more, and no other city of the player's is building it), and doesn't where they don't.
  */
 const manhattanProjectRules = (dependencies) => [
-    new BuildPriority_1.default('civ2-wonder:city/build-priority/manhattan-project', new Criterion_1.default((cityBuild) => !cityBuild.auto()), new Criterion_1.default((cityBuild, BuildItem) => BuildItem === Wonders_1.ManhattanProject), new Effect_1.default((cityBuild) => (0, exports.wantsManhattanProject)(dependencies, cityBuild.city().player())
-        ? exports.MANHATTAN_PROJECT_BIAS
-        : exports.NEVER_WANTED)),
+    new BuildPriority_1.default('civ2-wonder:city/build-priority/manhattan-project', new Criterion_1.default((cityBuild) => !cityBuild.auto()), new Criterion_1.default((cityBuild, BuildItem) => BuildItem === Wonders_1.ManhattanProject), new Effect_1.default((cityBuild) => {
+        const player = cityBuild.city().player();
+        return (0, exports.wantsManhattanProject)(dependencies, player)
+            ? (0, exports.manhattanProjectBias)(civilizeOf(dependencies.traitRegistry, player))
+            : exports.NEVER_WANTED;
+    })),
 ];
 exports.manhattanProjectRules = manhattanProjectRules;
 exports.default = exports.getRules;

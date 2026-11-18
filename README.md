@@ -72,13 +72,17 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **Build priority** (`Rules/City/build-priority`, for a city not on Auto): base-wonder's Wonder priority with
   civ1-wonder's numbers; the Lighthouse and Magellan's only for a player with a ship.
 - **The Manhattan Project** (`manhattanProjectRules`, civ-clone/web-renderer#1124): wanted only by a computer player
-  whose leader's attack attitude is aggressive, once it knows Rocketry, while no person who knows Rocketry is weaker
-  than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any other player it
-  scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted at all"; for
-  an aggressive leader it scores twice any other Wonder (`MANHATTAN_PROJECT_BIAS`), as the original ranks it ahead of
-  other Wonders for such a leader.
-  **Deviation:** the original scores it for any leader, ranking it higher the more militaristic and aggressive the
-  leader is; here a leader who isn't aggressive never builds it.
+  whose leader's attack attitude is aggressive, once it knows Rocketry, while no person still in the game who knows
+  Rocketry is weaker than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any
+  other player it scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted
+  at all". For an aggressive leader it adds `manhattanProjectBias`: the original adds `civilize × 2 − attack` to its
+  score (lower wanted more), which puts it ahead of other Wonders for a militaristic leader, level with them a little
+  ahead for a normal one, and behind them for a civilized one; here half a Wonder priority for each point (2.25, 0.75,
+  −0.75, beside the Wonder priority's 1.5). The bias stands on its own where the Wonder priority's own criteria (5
+  shields, not building it elsewhere) don't hold.
+  **Deviations:** the original scores it for any leader; here a leader who isn't aggressive never builds it. The
+  original's two further points against it while the top-ranked player is a person (one, and one more if that person
+  doesn't know Rocketry) aren't here. Strength is base's `militaryPower`, not the original's stored military strength.
 
 ## Not yet (Civ2 M2a deviations and gaps)
 

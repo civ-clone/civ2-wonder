@@ -26,7 +26,7 @@ export declare const getRules: (
   requirementRegistry?: RequirementRegistry
 ) => BuildPriority[];
 export declare const NEVER_WANTED = -1000;
-export declare const MANHATTAN_PROJECT_BIAS = 1.5;
+export declare const manhattanProjectBias: (civilize: number) => number;
 export interface ManhattanProjectDependencies {
   clientRegistry: ClientRegistry;
   playerRegistry: PlayerRegistry;
@@ -35,13 +35,6 @@ export interface ManhattanProjectDependencies {
   traitRegistry: TraitRegistry;
   unitRegistry: UnitRegistry;
 }
-/**
- * Whether a computer player wants the Manhattan Project, which lets every player build nuclear weapons: its leader's
- *  attack attitude is aggressive, it knows Rocketry, and no person who knows Rocketry is weaker than it (OpenCiv2
- *  `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`, where a weaker person with Rocketry rules it
- *  out). The original scores it for any leader, more for a militaristic and aggressive one; here only an aggressive
- *  leader wants it at all.
- */
 export declare const wantsManhattanProject: (
   {
     clientRegistry,
@@ -55,8 +48,9 @@ export declare const wantsManhattanProject: (
 ) => boolean;
 /**
  * `civ2-wonder:city/build-priority/manhattan-project`: for a city not on Auto, the Manhattan Project scores
- *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `MANHATTAN_PROJECT_BIAS` more than
- *  `getRules`' Wonder priority for one that does.
+ *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `manhattanProjectBias` for one that
+ *  does. The bias stands on its own: `getRules`' Wonder priority adds 1.5 where its own criteria hold (the city makes 5
+ *  shields or more, and no other city of the player's is building it), and doesn't where they don't.
  */
 export declare const manhattanProjectRules: (
   dependencies: ManhattanProjectDependencies
