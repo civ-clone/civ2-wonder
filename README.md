@@ -29,6 +29,10 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   - **Cure for Cancer:** 1 happy citizen in each of its owner's cities.
   - **Shakespeare's Theatre:** no unhappy citizens in its city.
   - **J. S. Bach's Cathedral:** 2 fewer unhappy in each of its owner's cities.
+
+    These four are yields that civ2-city-happiness sorts into Civ2's last happiness stage, after martial law, in the
+    original's order (`stagedHappiness`). There the yields only say that a Wonder applies, and the stage uses the
+    original's numbers.
   - **Copernicus Observatory:** doubles its city's science, after the rest.
   - **Lighthouse:** +1 move for ships that aren't coast-bound.
   - **Magellan's Expedition:** +2 moves for ships. Both are added before a damaged ship is slowed (civ2-unit's `Low`
@@ -67,14 +71,29 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   improvement, Wonders included, in `cityImprovements` (its `Created` rule), which a lost Wonder's `everBuilt` reads. civ2-unit reads the
   Manhattan Project for nuclear weapons.
 
+## A computer player's Wonders
+
+- **Build priority** (`Rules/City/build-priority`, for a city not on Auto): base-wonder's Wonder priority with
+  civ1-wonder's numbers; the Lighthouse and Magellan's only for a player with a ship.
+- **The Manhattan Project** (`manhattanProjectRules`, civ-clone/web-renderer#1124): wanted only by a computer player
+  whose leader's attack attitude is aggressive, once it knows Rocketry, while no person who knows
+  Rocketry is weaker than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any
+  other player it scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted
+  at all". For an aggressive leader it adds `manhattanProjectBias`: the original adds `civilize × 2 − attack` to its
+  score (lower wanted more), which puts it ahead of other Wonders for a militaristic leader, a little ahead of them
+  for a normal one, and behind them for a civilized one; here half a Wonder priority for each point (2.25, 0.75,
+  −0.75, beside the Wonder priority's 1.5). The bias stands on its own where the Wonder priority's own criteria (5
+  shields, not building it elsewhere) don't hold.
+  **Deviations:** the original scores it for any leader; here a leader who isn't aggressive never builds it. The
+  original wants it one point more while the strongest player is a person, and one more again if that person doesn't
+  know Rocketry (to counter a leading person); neither is here. Strength is base's `militaryPower`, not the original's stored military strength.
+
 ## Not yet (Civ2 M2a deviations and gaps)
 
 - **The Great Wall against barbarians** (their attack halved, and doubled against them): no combat hook.
 - **Leonardo's Workshop and a city given in a treaty** (`network_parley`'s city transfer upgrades for the new owner
   too): no city changes hands by treaty yet.
 - **The Lighthouse's safe Triremes** are civ2-unit's (its coast-bound odds), not here.
-- **Happiness order:** civ2-city-happiness is Civ1-shaped. The Wonders' content comes after martial law (Priority
-  4000), and the Hanging Gardens' and Cure for Cancer's happy citizens are city yields, as Civ1's are.
 - **Darwin's Voyage's second completion** waits for the player's next choice of research (both do, if they weren't
   researching anything), and is spent at once then. Civ2 completes both at once, picking the next research there and then (`civ_research_complete` calls
   `civ_choose_research`), which a city's production can't do here.

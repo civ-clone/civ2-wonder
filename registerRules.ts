@@ -15,7 +15,9 @@ import { Game, defaultGame } from '@civ-clone/core-game';
 import buildRequirements, { obsoletedBy } from './Requirements';
 import Production from '@civ-clone/base-terrain-yield-production/Production';
 import cityBuildCost from './Rules/City/build-cost';
-import cityBuildPriority from './Rules/City/build-priority';
+import cityBuildPriority, {
+  manhattanProjectRules,
+} from './Rules/City/build-priority';
 import cityBuildingComplete from './Rules/City/building-complete';
 import cityCost from './Rules/City/cost';
 import cityYield from './Rules/City/yield';
@@ -63,6 +65,14 @@ export const register = (game: Game): void => {
       game.units,
       game.requirements
     ),
+    ...manhattanProjectRules({
+      clientRegistry: game.clients,
+      playerRegistry: game.players,
+      playerResearchRegistry: game.playerResearch,
+      ruleRegistry: game.rules,
+      traitRegistry: game.traits,
+      unitRegistry: game.units,
+    }),
     ...cityBuildCost(),
     ...cityBuildingComplete({
       ...leonardoRegistries,
