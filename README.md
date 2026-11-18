@@ -29,6 +29,10 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   - **Cure for Cancer:** 1 happy citizen in each of its owner's cities.
   - **Shakespeare's Theatre:** no unhappy citizens in its city.
   - **J. S. Bach's Cathedral:** 2 fewer unhappy in each of its owner's cities.
+
+    These four are yields that civ2-city-happiness sorts into Civ2's last happiness stage, after martial law, in the
+    original's order (`stagedHappiness`). There the yields only say that a Wonder applies, and the stage uses the
+    original's numbers.
   - **Copernicus Observatory:** doubles its city's science, after the rest.
   - **Lighthouse:** +1 move for ships that aren't coast-bound.
   - **Magellan's Expedition:** +2 moves for ships. Both are added before a damaged ship is slowed (civ2-unit's `Low`
@@ -90,8 +94,6 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **Leonardo's Workshop and a city given in a treaty** (`network_parley`'s city transfer upgrades for the new owner
   too): no city changes hands by treaty yet.
 - **The Lighthouse's safe Triremes** are civ2-unit's (its coast-bound odds), not here.
-- **Happiness order:** civ2-city-happiness is Civ1-shaped. The Wonders' content comes after martial law (Priority
-  4000), and the Hanging Gardens' and Cure for Cancer's happy citizens are city yields, as Civ1's are.
 - **Darwin's Voyage's second completion** waits for the player's next choice of research (both do, if they weren't
   researching anything), and is spent at once then. Civ2 completes both at once, picking the next research there and then (`civ_research_complete` calls
   `civ_choose_research`), which a city's production can't do here.
