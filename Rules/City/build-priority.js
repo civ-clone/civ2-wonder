@@ -70,10 +70,10 @@ const wantsManhattanProject = ({ clientRegistry, playerRegistry, playerResearchR
     let own = null;
     return ((0, leaderTraits_1.default)(traitRegistry, player).some((trait) => trait instanceof Aggressive_1.default) &&
         knowsRocketry(player) &&
-        !playerRegistry.entries().some((other) => other !== player &&
+        !playerRegistry
+            .entries()
+            .some((other) => other !== player &&
             (0, isHuman_1.default)(other, clientRegistry) &&
-            // A person still in the game: one destroyed has no units, and would always count as weaker.
-            unitRegistry.getByPlayer(other).length > 0 &&
             knowsRocketry(other) &&
             power(other) < (own !== null && own !== void 0 ? own : (own = power(player)))));
 };

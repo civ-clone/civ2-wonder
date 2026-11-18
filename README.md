@@ -72,7 +72,7 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **Build priority** (`Rules/City/build-priority`, for a city not on Auto): base-wonder's Wonder priority with
   civ1-wonder's numbers; the Lighthouse and Magellan's only for a player with a ship.
 - **The Manhattan Project** (`manhattanProjectRules`, civ-clone/web-renderer#1124): wanted only by a computer player
-  whose leader's attack attitude is aggressive, once it knows Rocketry, while no person still in the game who knows
+  whose leader's attack attitude is aggressive, once it knows Rocketry, while no person who knows
   Rocketry is weaker than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any
   other player it scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted
   at all". For an aggressive leader it adds `manhattanProjectBias`: the original adds `civilize × 2 − attack` to its

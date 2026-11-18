@@ -166,15 +166,15 @@ export const wantsManhattanProject = (
       (trait: Trait): boolean => trait instanceof Aggressive
     ) &&
     knowsRocketry(player) &&
-    !playerRegistry.entries().some(
-      (other: Player): boolean =>
-        other !== player &&
-        isHuman(other, clientRegistry) &&
-        // A person still in the game: one destroyed has no units, and would always count as weaker.
-        unitRegistry.getByPlayer(other).length > 0 &&
-        knowsRocketry(other) &&
-        power(other) < (own ??= power(player))
-    )
+    !playerRegistry
+      .entries()
+      .some(
+        (other: Player): boolean =>
+          other !== player &&
+          isHuman(other, clientRegistry) &&
+          knowsRocketry(other) &&
+          power(other) < (own ??= power(player))
+      )
   );
 };
 
