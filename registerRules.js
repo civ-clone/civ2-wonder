@@ -39,7 +39,14 @@ const register = (game) => {
     game.rules.register((0, buildRules_1.builtOnceRule)('civ2-wonder', game.wonders, game.cityImprovements));
     // Which Wonders a city may build, from the entries in `Requirements`, through the game's `requirements`.
     game.requirements.add((0, buildRules_1.deriveBuildRules)(game.playerResearch, game.wonders, game.cityImprovements), ...Requirements_1.default);
-    game.rules.register(...(0, build_priority_1.default)(game.cities, game.cityBuilds, game.playerResearch, game.units, game.requirements), ...(0, build_cost_1.default)(), ...(0, building_complete_1.default)({
+    game.rules.register(...(0, build_priority_1.default)(game.cities, game.cityBuilds, game.playerResearch, game.units, game.requirements), ...(0, build_priority_1.manhattanProjectRules)({
+        clientRegistry: game.clients,
+        playerRegistry: game.players,
+        playerResearchRegistry: game.playerResearch,
+        ruleRegistry: game.rules,
+        traitRegistry: game.traits,
+        unitRegistry: game.units,
+    }), ...(0, build_cost_1.default)(), ...(0, building_complete_1.default)({
         ...leonardoRegistries,
         cityBuildRegistry: game.cityBuilds,
         engine: game.engine,

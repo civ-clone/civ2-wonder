@@ -20,7 +20,13 @@ import Naval from '@civ-clone/base-unit-type-naval/Naval';
 import Production from '@civ-clone/base-terrain-yield-production/Production';
 import Unit from '@civ-clone/core-unit/Unit';
 import WonderRegistry from '@civ-clone/core-wonder/WonderRegistry';
-import buildPriority from '../Rules/City/build-priority';
+import buildPriority, {
+  NEVER_WANTED,
+  manhattanProjectRules,
+} from '../Rules/City/build-priority';
+import Aggressive from '@civ-clone/base-leader-trait-aggression/Aggression/Aggressive';
+import Leader from '@civ-clone/core-civilization/Leader';
+import Normal from '@civ-clone/base-leader-trait-aggression/Aggression/Normal';
 
 describe('the Wonders', (): void => {
   it('are the 28 of RULES.TXT, each once, in its order', (): void => {
@@ -115,7 +121,7 @@ describe('registerRules', (): void => {
 });
 
 describe('build priority', (): void => {
-  it('never wants the Manhattan Project, and a ship Wonder only with a ship', (): void => {
+  it('wants a ship Wonder only with a ship, and leaves the Manhattan Project to its own rule', (): void => {
     const player = {},
       city = Object.assign(Object.create(City.prototype), {
         player: () => player,
@@ -138,7 +144,8 @@ describe('build priority', (): void => {
 
     expect(rule.id()).to.equal('civ2-wonder:city/build-priority/wonder');
     expect(wants(Wonders.Pyramids)).true;
-    expect(wants(Wonders.ManhattanProject)).false;
+    // Scored like any other Wonder here; `manhattanProjectRules` rules it out for a leader who doesn't want it.
+    expect(wants(Wonders.ManhattanProject)).true;
     expect(wants(Wonders.Lighthouse)).false;
 
     units.push(Object.create(Naval.prototype));
@@ -153,6 +160,122 @@ describe('build priority', (): void => {
     auto.on = true;
 
     expect(wants(Wonders.Pyramids)).false;
+  });
+});
+
+describe('the Manhattan Project (civ-clone/web-renderer#1124)', (): void => {
+  // A player whose leader is aggressive or not, who knows Rocketry or not, and another player, a person or not, who
+  //  knows Rocketry or not, stronger or weaker.
+  const setUp = ({
+    aggressive = true,
+    rocketry = true,
+    other = {
+      human: false,
+      rocketry: true,
+      power: 1,
+    },
+  }: {
+    aggressive?: boolean;
+    rocketry?: boolean;
+    other?: { human: boolean; rocketry: boolean; power: number };
+  } = {}) => {
+    const LeaderType = class extends Leader {},
+      civilization = {
+        leader: () => ({ sourceClass: () => LeaderType }),
+      },
+      player = { id: 'player', civilization: () => civilization },
+      rival = { id: 'rival', civilization: () => civilization },
+      trait = aggressive ? new Aggressive() : new Normal(),
+      knows = new Map<unknown, boolean>([
+        [player, rocketry],
+        [rival, other.rocketry],
+      ]),
+      power = new Map<unknown, number>([
+        [player, 2],
+        [rival, other.power],
+      ]),
+      dependencies = {
+        // A person's client is any that isn't an `AIClient`; a computer player's is left out (none at all counts the
+        //  same).
+        clientRegistry: {
+          getBy: (key: string, of: unknown) =>
+            of === rival && other.human ? [{}] : [],
+        },
+        playerRegistry: { entries: () => [player, rival] },
+        playerResearchRegistry: {
+          getByPlayer: (of: unknown) => ({
+            completed: () => knows.get(of),
+          }),
+        },
+        // Each unit counts 1 (`MilitaryStrength`).
+        ruleRegistry: {
+          process: () => [{ attack: 1, defence: 0 }],
+        },
+        traitRegistry: {
+          getByLeader: () => [trait],
+        },
+        unitRegistry: {
+          getByPlayer: (of: unknown) => Array(power.get(of)).fill({}),
+        },
+      } as never;
+
+    return { dependencies, player };
+  };
+
+  const cityBuildFor = (player: unknown, auto = false): CityBuild =>
+    ({
+      city: () => ({ player: () => player }),
+      auto: () => auto,
+    } as unknown as CityBuild);
+
+  it("scores below nothing for a leader who isn't aggressive, or before Rocketry", (): void => {
+    [setUp({ aggressive: false }), setUp({ rocketry: false })].forEach(
+      ({ dependencies, player }): void => {
+        const [rule] = manhattanProjectRules(dependencies);
+
+        expect(
+          rule.validate(cityBuildFor(player), Wonders.ManhattanProject as never)
+        ).true;
+        expect(
+          rule.process(cityBuildFor(player), Wonders.ManhattanProject as never)
+        ).to.equal(NEVER_WANTED);
+      }
+    );
+  });
+
+  it('scores below nothing while a person who knows Rocketry is weaker, as the original', (): void => {
+    const weaker = setUp({
+        other: { human: true, rocketry: true, power: 1 },
+      }),
+      stronger = setUp({
+        other: { human: true, rocketry: true, power: 3 },
+      }),
+      score = ({ dependencies, player }: ReturnType<typeof setUp>) =>
+        manhattanProjectRules(dependencies)[0].process(
+          cityBuildFor(player),
+          Wonders.ManhattanProject as never
+        );
+
+    expect(score(weaker)).to.equal(NEVER_WANTED);
+    expect(score(stronger)).to.equal(0);
+  });
+
+  it("adds nothing to an aggressive leader's score once it knows Rocketry, and asks about nothing else", (): void => {
+    const { dependencies, player } = setUp(),
+      [rule] = manhattanProjectRules(dependencies);
+
+    expect(
+      rule.process(cityBuildFor(player), Wonders.ManhattanProject as never)
+    ).to.equal(0);
+    expect(rule.validate(cityBuildFor(player), Wonders.Pyramids as never))
+      .false;
+    // A city on Auto is ranked by civ2-city.
+    expect(
+      rule.validate(
+        cityBuildFor(player, true),
+        Wonders.ManhattanProject as never
+      )
+    ).false;
   });
 });
 

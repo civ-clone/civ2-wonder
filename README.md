@@ -67,6 +67,17 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   improvement, Wonders included, in `cityImprovements` (its `Created` rule), which a lost Wonder's `everBuilt` reads. civ2-unit reads the
   Manhattan Project for nuclear weapons.
 
+## A computer player's Wonders
+
+- **Build priority** (`Rules/City/build-priority`, for a city not on Auto): base-wonder's Wonder priority with
+  civ1-wonder's numbers; the Lighthouse and Magellan's only for a player with a ship.
+- **The Manhattan Project** (`manhattanProjectRules`, civ-clone/web-renderer#1124): wanted only by a computer player
+  whose leader's attack attitude is aggressive, once it knows Rocketry, while no person who knows Rocketry is weaker
+  than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any other player it
+  scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted at all".
+  **Deviation:** the original scores it for any leader, ranking it higher the more militaristic and aggressive the
+  leader is; here a leader who isn't aggressive never builds it.
+
 ## Not yet (Civ2 M2a deviations and gaps)
 
 - **The Great Wall against barbarians** (their attack halved, and doubled against them): no combat hook.
