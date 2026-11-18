@@ -76,13 +76,13 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
   Rocketry is weaker than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any
   other player it scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted
   at all". For an aggressive leader it adds `manhattanProjectBias`: the original adds `civilize × 2 − attack` to its
-  score (lower wanted more), which puts it ahead of other Wonders for a militaristic leader, level with them a little
-  ahead for a normal one, and behind them for a civilized one; here half a Wonder priority for each point (2.25, 0.75,
+  score (lower wanted more), which puts it ahead of other Wonders for a militaristic leader, a little ahead of them
+  for a normal one, and behind them for a civilized one; here half a Wonder priority for each point (2.25, 0.75,
   −0.75, beside the Wonder priority's 1.5). The bias stands on its own where the Wonder priority's own criteria (5
   shields, not building it elsewhere) don't hold.
   **Deviations:** the original scores it for any leader; here a leader who isn't aggressive never builds it. The
-  original's two further points against it while the top-ranked player is a person (one, and one more if that person
-  doesn't know Rocketry) aren't here. Strength is base's `militaryPower`, not the original's stored military strength.
+  original wants it one point more while the strongest player is a person, and one more again if that person doesn't
+  know Rocketry (to counter a leading person); neither is here. Strength is base's `militaryPower`, not the original's stored military strength.
 
 ## Not yet (Civ2 M2a deviations and gaps)
 

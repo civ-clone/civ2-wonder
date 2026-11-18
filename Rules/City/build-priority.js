@@ -49,11 +49,12 @@ const manhattanProjectBias = (civilize) => (buildPriority_1.wonderPriority * (1 
 exports.manhattanProjectBias = manhattanProjectBias;
 /**
  * Whether a computer player wants the Manhattan Project, which lets every player build nuclear weapons: its leader's
- *  attack attitude is aggressive, it knows Rocketry, and no person still in the game who knows Rocketry is weaker than
+ *  attack attitude is aggressive, it knows Rocketry, and no person who knows Rocketry is weaker than
  *  it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`, where a weaker person with
  *  Rocketry rules it out). The original scores it for any leader; here only an aggressive leader wants it at all.
  *  Strength is base's `militaryPower` (attack and defence of all the player's units), not the original's stored
- *  military strength.
+ *  military strength. The original also wants it more while the strongest player is a person (more again if that
+ *  person doesn't know Rocketry); that isn't here.
  */
 // The leader's civilize attitude: −1 militaristic, 1 civilized, 0 otherwise.
 const civilizeOf = (traitRegistry, player) => {

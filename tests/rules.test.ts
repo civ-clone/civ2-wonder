@@ -272,13 +272,13 @@ describe('the Manhattan Project (civ-clone/web-renderer#1124)', (): void => {
 
     expect(score(weaker)).to.equal(NEVER_WANTED);
     expect(score(stronger)).to.equal(manhattanProjectBias(0));
-    // A weaker person who doesn't know Rocketry doesn't count, nor one with no units left (destroyed).
+    // A weaker person who doesn't know Rocketry doesn't count; one with no units at all is weaker, as in the original.
     expect(
       score(setUp({ other: { human: true, rocketry: false, power: 1 } }))
     ).to.equal(manhattanProjectBias(0));
     expect(
       score(setUp({ other: { human: true, rocketry: true, power: 0 } }))
-    ).to.equal(manhattanProjectBias(0));
+    ).to.equal(NEVER_WANTED);
   });
 
   it("ranks it by the leader's civilize attitude: ahead of other Wonders when militaristic, behind them when civilized, below nothing with no leader", (): void => {
