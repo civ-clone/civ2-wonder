@@ -21,6 +21,7 @@ import Production from '@civ-clone/base-terrain-yield-production/Production';
 import Unit from '@civ-clone/core-unit/Unit';
 import WonderRegistry from '@civ-clone/core-wonder/WonderRegistry';
 import buildPriority, {
+  MANHATTAN_PROJECT_BIAS,
   NEVER_WANTED,
   manhattanProjectRules,
 } from '../Rules/City/build-priority';
@@ -257,16 +258,16 @@ describe('the Manhattan Project (civ-clone/web-renderer#1124)', (): void => {
         );
 
     expect(score(weaker)).to.equal(NEVER_WANTED);
-    expect(score(stronger)).to.equal(0);
+    expect(score(stronger)).to.equal(MANHATTAN_PROJECT_BIAS);
   });
 
-  it("adds nothing to an aggressive leader's score once it knows Rocketry, and asks about nothing else", (): void => {
+  it('ranks it ahead of other Wonders for an aggressive leader once it knows Rocketry, and asks about nothing else', (): void => {
     const { dependencies, player } = setUp(),
       [rule] = manhattanProjectRules(dependencies);
 
     expect(
       rule.process(cityBuildFor(player), Wonders.ManhattanProject as never)
-    ).to.equal(0);
+    ).to.equal(MANHATTAN_PROJECT_BIAS);
     expect(rule.validate(cityBuildFor(player), Wonders.Pyramids as never))
       .false;
     // A city on Auto is ranked by civ2-city.

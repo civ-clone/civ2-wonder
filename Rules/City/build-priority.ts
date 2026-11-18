@@ -44,7 +44,10 @@ import Naval from '@civ-clone/base-unit-type-naval/Naval';
 import Production from '@civ-clone/base-terrain-yield-production/Production';
 import Unit from '@civ-clone/core-unit/Unit';
 import { isA } from '@civ-clone/core-unit/traits';
-import { wonderPriorityRules } from '@civ-clone/base-wonder/lib/buildPriority';
+import {
+  wonderPriority,
+  wonderPriorityRules,
+} from '@civ-clone/base-wonder/lib/buildPriority';
 
 /**
  * How much a computer player wants a Wonder: base-wonder's rule with civ1-wonder's numbers, until the AI's own Wonder
@@ -102,6 +105,11 @@ export const getRules = (
 //  player that doesn't want it, so that it isn't built at all.
 export const NEVER_WANTED = -1000;
 
+// What `manhattanProjectRules` adds for a player that wants the Manhattan Project, on top of the Wonder priority every
+//  Wonder gets: the original ranks it ahead of other Wonders for an aggressive, militaristic leader (its score, lowest
+//  wanted most, less the leader's attack attitude and twice its civilize attitude), so here it scores twice a Wonder's.
+export const MANHATTAN_PROJECT_BIAS = wonderPriority;
+
 export interface ManhattanProjectDependencies {
   clientRegistry: ClientRegistry;
   playerRegistry: PlayerRegistry;
@@ -153,8 +161,8 @@ export const wantsManhattanProject = (
 
 /**
  * `civ2-wonder:city/build-priority/manhattan-project`: for a city not on Auto, the Manhattan Project scores
- *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and nothing more for one that does,
- *  which `getRules`' Wonder priority then scores like any other Wonder.
+ *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `MANHATTAN_PROJECT_BIAS` more than
+ *  `getRules`' Wonder priority for one that does.
  */
 export const manhattanProjectRules = (
   dependencies: ManhattanProjectDependencies
@@ -168,7 +176,7 @@ export const manhattanProjectRules = (
     ),
     new Effect((cityBuild: CityBuild): number =>
       wantsManhattanProject(dependencies, cityBuild.city().player())
-        ? 0
+        ? MANHATTAN_PROJECT_BIAS
         : NEVER_WANTED
     )
   ),

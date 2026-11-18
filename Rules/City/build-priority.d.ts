@@ -26,6 +26,7 @@ export declare const getRules: (
   requirementRegistry?: RequirementRegistry
 ) => BuildPriority[];
 export declare const NEVER_WANTED = -1000;
+export declare const MANHATTAN_PROJECT_BIAS = 1.5;
 export interface ManhattanProjectDependencies {
   clientRegistry: ClientRegistry;
   playerRegistry: PlayerRegistry;
@@ -54,8 +55,8 @@ export declare const wantsManhattanProject: (
 ) => boolean;
 /**
  * `civ2-wonder:city/build-priority/manhattan-project`: for a city not on Auto, the Manhattan Project scores
- *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and nothing more for one that does,
- *  which `getRules`' Wonder priority then scores like any other Wonder.
+ *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `MANHATTAN_PROJECT_BIAS` more than
+ *  `getRules`' Wonder priority for one that does.
  */
 export declare const manhattanProjectRules: (
   dependencies: ManhattanProjectDependencies

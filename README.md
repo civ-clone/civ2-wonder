@@ -74,7 +74,9 @@ ids, with Civ2's numbers from OpenCiv2's reconstruction of the original (richard
 - **The Manhattan Project** (`manhattanProjectRules`, civ-clone/web-renderer#1124): wanted only by a computer player
   whose leader's attack attitude is aggressive, once it knows Rocketry, while no person who knows Rocketry is weaker
   than it (OpenCiv2 `city_choose_production_wonder_bias`, `city_production.cpp:1240-1263`). For any other player it
-  scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted at all".
+  scores `NEVER_WANTED`, below anything a city would build, which simple-ai-client reads as "not wanted at all"; for
+  an aggressive leader it scores twice any other Wonder (`MANHATTAN_PROJECT_BIAS`), as the original ranks it ahead of
+  other Wonders for such a leader.
   **Deviation:** the original scores it for any leader, ranking it higher the more militaristic and aggressive the
   leader is; here a leader who isn't aggressive never builds it.
 

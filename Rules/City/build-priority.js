@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.manhattanProjectRules = exports.wantsManhattanProject = exports.NEVER_WANTED = exports.getRules = void 0;
+exports.manhattanProjectRules = exports.wantsManhattanProject = exports.MANHATTAN_PROJECT_BIAS = exports.NEVER_WANTED = exports.getRules = void 0;
 const CityBuildRegistry_1 = require("@civ-clone/core-city-build/CityBuildRegistry");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Wonders_1 = require("../../Wonders");
@@ -38,6 +38,10 @@ exports.getRules = getRules;
 // Below anything a computer player's city would build: what `manhattanProjectRules` gives the Manhattan Project for a
 //  player that doesn't want it, so that it isn't built at all.
 exports.NEVER_WANTED = -1000;
+// What `manhattanProjectRules` adds for a player that wants the Manhattan Project, on top of the Wonder priority every
+//  Wonder gets: the original ranks it ahead of other Wonders for an aggressive, militaristic leader (its score, lowest
+//  wanted most, less the leader's attack attitude and twice its civilize attitude), so here it scores twice a Wonder's.
+exports.MANHATTAN_PROJECT_BIAS = buildPriority_1.wonderPriority;
 /**
  * Whether a computer player wants the Manhattan Project, which lets every player build nuclear weapons: its leader's
  *  attack attitude is aggressive, it knows Rocketry, and no person who knows Rocketry is weaker than it (OpenCiv2
@@ -59,12 +63,12 @@ const wantsManhattanProject = ({ clientRegistry, playerRegistry, playerResearchR
 exports.wantsManhattanProject = wantsManhattanProject;
 /**
  * `civ2-wonder:city/build-priority/manhattan-project`: for a city not on Auto, the Manhattan Project scores
- *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and nothing more for one that does,
- *  which `getRules`' Wonder priority then scores like any other Wonder.
+ *  `NEVER_WANTED` for a player that doesn't want it (`wantsManhattanProject`), and `MANHATTAN_PROJECT_BIAS` more than
+ *  `getRules`' Wonder priority for one that does.
  */
 const manhattanProjectRules = (dependencies) => [
     new BuildPriority_1.default('civ2-wonder:city/build-priority/manhattan-project', new Criterion_1.default((cityBuild) => !cityBuild.auto()), new Criterion_1.default((cityBuild, BuildItem) => BuildItem === Wonders_1.ManhattanProject), new Effect_1.default((cityBuild) => (0, exports.wantsManhattanProject)(dependencies, cityBuild.city().player())
-        ? 0
+        ? exports.MANHATTAN_PROJECT_BIAS
         : exports.NEVER_WANTED)),
 ];
 exports.manhattanProjectRules = manhattanProjectRules;
