@@ -17,6 +17,7 @@ import {
 } from '@civ-clone/base-wonder/lib/hasWonder';
 import City from '@civ-clone/core-city/City';
 import Cost from '@civ-clone/core-city/Rules/Cost';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import Priority from '@civ-clone/core-rule/Priority';
 import Unhappiness from '@civ-clone/base-city-yield-unhappiness/Unhappiness';
@@ -26,6 +27,10 @@ import { reduceYield } from '@civ-clone/core-yield/lib/reduceYields';
 // OpenCiv2 `city_calc_trade_happiness` (richardpenman/civ2@49f26ec), stage 4, after the government's units (which
 //  civ2-city-happiness applies at 3500): in Shakespeare's Theatre's city no citizen is unhappy; in each of J. S.
 //  Bach's Cathedral's owner's cities 2 fewer are (every city, not only its continent's, as Civ1's).
+// The unhappy citizens J. S. Bach's Cathedral makes content, read by its rule and by what the rule says it does
+//  (civ-clone/web-renderer#1196).
+export const bachContent: number = 2;
+
 export const getRules = (
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance,
   wonderRegistry: WonderRegistry = wonderRegistryInstance,
@@ -46,7 +51,12 @@ export const getRules = (
           -Math.max(0, reduceYield(yields, Unhappiness)),
           ShakespearesTheatre.name
         )
-    )
+    ),
+    new Description({
+      type: 'content',
+      subject: ShakespearesTheatre,
+      amount: 'all',
+    })
   ),
 
   new Cost(
@@ -61,10 +71,16 @@ export const getRules = (
     new Effect(
       (city: City, yields: Yield[]): Yield =>
         new Unhappiness(
-          -Math.max(0, Math.min(2, reduceYield(yields, Unhappiness))),
+          -Math.max(0, Math.min(bachContent, reduceYield(yields, Unhappiness))),
           JsBachsCathedral.name
         )
-    )
+    ),
+    new Description({
+      type: 'content',
+      subject: JsBachsCathedral,
+      value: bachContent,
+      scope: 'player',
+    })
   ),
 ];
 

@@ -7,6 +7,9 @@ export interface CityYieldRegistries {
   requirementRegistry?: RequirementRegistry;
   wonderRegistry?: WonderRegistry;
 }
+export declare const hangingGardensHappy: number,
+  hangingGardensCityHappy: number,
+  cureForCancerHappy: number;
 export declare const getRules: ({
   playerResearchRegistry,
   requirementRegistry,

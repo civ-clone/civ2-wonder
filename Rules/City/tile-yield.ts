@@ -14,6 +14,7 @@ import {
 import City from '@civ-clone/core-city/City';
 import CityTileYield from '@civ-clone/core-city/Rules/CityTileYield';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import Production from '@civ-clone/base-terrain-yield-production/Production';
 import Tile from '@civ-clone/core-world/Tile';
@@ -44,6 +45,10 @@ const totalOf = (yields: Yield[], YieldType: typeof Yield): number =>
 // - line 2890, `colossusLand`: a land square that gives any trade by then (after its river and road) gives 1 more;
 // - line 2894, `kingRichards`: every square, ocean too, gives 1 more shield in King Richard's Crusade's city.
 // `wonder_get_city` answers no city once a Wonder has expired (`wonder_is_expired`), as `cityHasWonder` does.
+// What each Wonder adds to a square, read by its rules and by what they say they do (civ-clone/web-renderer#1196).
+export const colossusTrade: number = 1,
+  kingRichardsProduction: number = 1;
+
 export const getRules = ({
   playerResearchRegistry = playerResearchRegistryInstance,
   requirementRegistry = requirementRegistryInstance,
@@ -69,7 +74,14 @@ export const getRules = ({
       new Criterion((city: City, tile: Tile): boolean => tile.isWater()),
       hasColossus,
       new Effect((city: City, tile: Tile, yields: Yield[]): void => {
-        yields.push(new Trade(1, Colossus.name));
+        yields.push(new Trade(colossusTrade, Colossus.name));
+      }),
+      new Description({
+        type: 'tile_yield',
+        subject: Colossus,
+        yield: Trade,
+        value: colossusTrade,
+        on: 'ocean',
       })
     ),
 
@@ -83,7 +95,14 @@ export const getRules = ({
       ),
       hasColossus,
       new Effect((city: City, tile: Tile, yields: Yield[]): void => {
-        yields.push(new Trade(1, Colossus.name));
+        yields.push(new Trade(colossusTrade, Colossus.name));
+      }),
+      new Description({
+        type: 'tile_yield',
+        subject: Colossus,
+        yield: Trade,
+        value: colossusTrade,
+        on: 'land_producing',
       })
     ),
 
@@ -92,7 +111,15 @@ export const getRules = ({
       tileYieldPriority('kingRichards'),
       hasKingRichards,
       new Effect((city: City, tile: Tile, yields: Yield[]): void => {
-        yields.push(new Production(1, KingRichardsCrusade.name));
+        yields.push(
+          new Production(kingRichardsProduction, KingRichardsCrusade.name)
+        );
+      }),
+      new Description({
+        type: 'tile_yield',
+        subject: KingRichardsCrusade,
+        yield: Production,
+        value: kingRichardsProduction,
       })
     ),
   ];

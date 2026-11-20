@@ -7,6 +7,7 @@ export interface CityTileYieldRegistries {
   requirementRegistry?: RequirementRegistry;
   wonderRegistry?: WonderRegistry;
 }
+export declare const colossusTrade: number, kingRichardsProduction: number;
 export declare const getRules: ({
   playerResearchRegistry,
   requirementRegistry,

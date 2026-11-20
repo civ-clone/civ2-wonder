@@ -14,6 +14,7 @@ import {
 import { isA } from '@civ-clone/core-unit/traits';
 import CoastBound from '@civ-clone/base-unit-trait-coast-bound/CoastBound';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import Priority from '@civ-clone/core-rule/Priority';
 import { Movement } from '@civ-clone/core-unit/Yields';
@@ -28,6 +29,11 @@ import { playerHasWonder } from '@civ-clone/base-wonder/lib/hasWonder';
 //  damaged ship's moves are cut (civ2-unit's `Low` damaged-movement rule), as in the original, whichever package is
 //  loaded first: they run at `BEFORE_DAMAGE`, between the `Normal` rules that set movement and the `Low` ones.
 export const BEFORE_DAMAGE = 2500;
+
+/** The moves each Wonder adds, read by its rule and by what it says it does (civ-clone/web-renderer#1196). */
+export const lighthouseMoves: number = 1,
+  magellansMoves: number = 2;
+
 export const getRules = (
   wonderRegistry: WonderRegistry = wonderRegistryInstance,
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance,
@@ -51,7 +57,17 @@ export const getRules = (
         playerResearchRegistry,
         requirementRegistry
       ),
-      new Effect((unit: Unit, unitYield: Yield): void => unitYield.add(1))
+      new Effect((unit: Unit, unitYield: Yield): void =>
+        unitYield.add(lighthouseMoves)
+      ),
+      new Description({
+        type: 'unit_movement',
+        subject: Lighthouse,
+        unit: Naval,
+        value: lighthouseMoves,
+        notFor: CoastBound,
+        scope: 'player',
+      })
     ),
     new UnitYield(
       'civ2-wonder:unit/yield/magellans-expedition',
@@ -64,7 +80,16 @@ export const getRules = (
         playerResearchRegistry,
         requirementRegistry
       ),
-      new Effect((unit: Unit, unitYield: Yield): void => unitYield.add(2))
+      new Effect((unit: Unit, unitYield: Yield): void =>
+        unitYield.add(magellansMoves)
+      ),
+      new Description({
+        type: 'unit_movement',
+        subject: MagellansExpedition,
+        unit: Naval,
+        value: magellansMoves,
+        scope: 'player',
+      })
     ),
   ];
 };

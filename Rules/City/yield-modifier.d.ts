@@ -7,6 +7,8 @@ export interface YieldModifierRegistries {
   requirementRegistry?: RequirementRegistry;
   wonderRegistry?: WonderRegistry;
 }
+/** The share of its city's science the Copernicus Observatory adds, of the total so far: all of it again. */
+export declare const copernicusShare: number;
 export declare const getRules: ({
   playerResearchRegistry,
   requirementRegistry,

@@ -11,6 +11,7 @@ import {
   instance as wonderRegistryInstance,
 } from '@civ-clone/core-wonder/WonderRegistry';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import { PromotionChance } from '@civ-clone/base-unit-veteran-promotion/lib/Rules';
 import { SunTzusWarAcademy } from '../../Wonders';
@@ -39,7 +40,12 @@ export const getRules = (
         requirementRegistry
       )
     ),
-    new Effect((): number => 1)
+    new Effect((): number => 1),
+    new Description({
+      type: 'promotion_chance',
+      subject: SunTzusWarAcademy,
+      scope: 'player',
+    })
   ),
 ];
 
