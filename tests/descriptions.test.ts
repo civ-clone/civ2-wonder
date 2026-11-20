@@ -164,7 +164,7 @@ describe('descriptions', (): void => {
     });
     expect(only(rules, Colossus, 'tile_yield').map(([, { on }]) => on)).to.eql([
       'ocean',
-      'producing',
+      'land_producing',
     ]);
 
     const [[kingRichards, kingRichardsDescription]] = only(

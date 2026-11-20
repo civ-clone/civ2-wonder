@@ -102,7 +102,7 @@ export const getRules = ({
         subject: Colossus,
         yield: Trade,
         value: colossusTrade,
-        on: 'producing',
+        on: 'land_producing',
       })
     ),
 

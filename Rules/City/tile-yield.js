@@ -45,7 +45,7 @@ const getRules = ({ playerResearchRegistry = PlayerResearchRegistry_1.instance, 
             subject: Wonders_1.Colossus,
             yield: Trade_1.default,
             value: exports.colossusTrade,
-            on: 'producing',
+            on: 'land_producing',
         })),
         new CityTileYield_1.default('civ2-wonder:city/tile-yield/king-richards-crusade', (0, tileYieldPipeline_1.tileYieldPriority)('kingRichards'), hasKingRichards, new Effect_1.default((city, tile, yields) => {
             yields.push(new Production_1.default(exports.kingRichardsProduction, Wonders_1.KingRichardsCrusade.name));
