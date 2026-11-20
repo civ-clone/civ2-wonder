@@ -1,6 +1,6 @@
 {
   "name": "@civ-clone/civ2-wonder",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Civilization II's 28 Wonders of the World: their costs, requirements and expiry, and the effects whose shape the base rules already have.",
   "main": "index.js",
   "repository": "git@github.com:civ-clone/civ2-wonder.git",
