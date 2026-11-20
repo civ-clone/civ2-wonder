@@ -15,9 +15,11 @@ import leonardoUpgrade, {
   stolenAdvanceArrived,
 } from '../../lib/leonardo';
 import Complete from '@civ-clone/core-science/Rules/Complete';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
-import { GreatLibrary } from '../../Wonders';
+import { GreatLibrary, LeonardosWorkshop } from '../../Wonders';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
+import { describedRule } from '../../lib/describedRule';
 import { greatLibraryRules } from '@civ-clone/base-wonder/lib/greatLibraryRules';
 import isBarbarian from '@civ-clone/base-civilization-barbarian/isBarbarian';
 
@@ -57,8 +59,14 @@ export const getRules = (
         if (stolenAdvanceArrived(player)) {
           upgrade(player);
         }
+      }),
+      new Description({
+        type: 'unit_upgrade',
+        subject: LeonardosWorkshop,
+        scope: 'player',
       })
     ),
+    // base-wonder's rule, saying what it does (civ-clone/web-renderer#1196).
     ...greatLibraryRules(
       {
         GreatLibrary,
@@ -69,6 +77,16 @@ export const getRules = (
       playerResearchRegistry,
       wonderRegistry,
       requirementRegistry
+    ).map(
+      (rule: Complete): Complete =>
+        describedRule(
+          rule,
+          new Description({
+            type: 'shared_advances',
+            subject: GreatLibrary,
+            value: GREAT_LIBRARY_HOLDERS,
+          })
+        )
     ),
   ];
 };

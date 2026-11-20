@@ -12,6 +12,7 @@ import { BuildableInstance } from '@civ-clone/core-city-build/Buildable';
 import BuildingComplete from '@civ-clone/core-city-build/Rules/BulidingComplete';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import { DARWINS_VOYAGE } from '../RuleIds';
 import { DarwinsVoyage } from '../Wonders';
 import Effect from '@civ-clone/core-rule/Effect';
@@ -27,6 +28,9 @@ import Started from '@civ-clone/core-science/Rules/Started';
 // The choice the original makes there and then (`civ_choose_research`, the human's dialog or the computer's pick)
 //  can't happen inside a city's production here: a completion owed to a player researching nothing waits, saved as a
 //  `PendingEffect` under `DARWINS_VOYAGE`, until they next choose, and is spent at once then.
+
+/** The research Darwin's Voyage completes, read by its rule and by what it says it does (civ-clone/web-renderer#1196). */
+export const DARWINS_VOYAGE_ADVANCES: number = 2;
 
 /** `civ_research_complete`: the advance being researched is given, and the progress towards research is 0 after. */
 export const completeResearch = (playerResearch: PlayerResearch): void => {
@@ -79,7 +83,7 @@ export const darwinsVoyageCompleteRules = (
           cityBuild.city().player()
         ),
         pendingEffect = new PendingEffect(DARWINS_VOYAGE, playerResearch, {
-          remaining: '2',
+          remaining: String(DARWINS_VOYAGE_ADVANCES),
         });
 
       pendingEffects.register(pendingEffect);
@@ -87,6 +91,11 @@ export const darwinsVoyageCompleteRules = (
       if (playerResearch.researching() !== null) {
         spend(playerResearch, pendingEffect, pendingEffects);
       }
+    }),
+    new Description({
+      type: 'free_advances',
+      subject: DarwinsVoyage,
+      value: DARWINS_VOYAGE_ADVANCES,
     })
   ),
 ];

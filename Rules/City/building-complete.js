@@ -11,6 +11,7 @@ const WonderRegistry_1 = require("@civ-clone/core-wonder/WonderRegistry");
 const leonardo_1 = require("../../lib/leonardo");
 const BulidingComplete_1 = require("@civ-clone/core-city-build/Rules/BulidingComplete");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
+const Description_1 = require("@civ-clone/core-rule/Description");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const darwinsVoyage_1 = require("../../lib/darwinsVoyage");
 const lifecycleRules_1 = require("@civ-clone/base-wonder/lib/lifecycleRules");
@@ -40,6 +41,10 @@ const getRules = ({ cityBuildRegistry = CityBuildRegistry_1.instance, engine = E
             const tiles = cityBuild.city().tile().map().entries();
             playerWorldRegistry.forEach((playerWorld) => playerWorld.register(...tiles));
             engine.emit('wonder:apollo-revealed', built, cityBuild.city());
+        }), new Description_1.default({
+            type: 'reveals_map',
+            subject: Wonders_1.ApolloProgram,
+            scope: 'world',
         })),
     ];
 };

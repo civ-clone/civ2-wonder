@@ -19,6 +19,7 @@ import {
 } from '@civ-clone/core-wonder/WonderRegistry';
 import Availability from '@civ-clone/core-government/Rules/Availability';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Government from '@civ-clone/core-government/Government';
 import Player from '@civ-clone/core-player/Player';
 import { STATUE_OF_LIBERTY_AVAILABILITY_RULE } from '../../RuleIds';
@@ -56,7 +57,8 @@ export const getRules = (
           playerResearchRegistry,
           requirementRegistry
         )
-    )
+    ),
+    new Description({ type: 'any_government', subject: StatueOfLiberty })
   ),
 ];
 

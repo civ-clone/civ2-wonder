@@ -6,8 +6,10 @@ const RequirementRegistry_1 = require("@civ-clone/core-requirement/RequirementRe
 const WonderRegistry_1 = require("@civ-clone/core-wonder/WonderRegistry");
 const leonardo_1 = require("../../lib/leonardo");
 const Complete_1 = require("@civ-clone/core-science/Rules/Complete");
+const Description_1 = require("@civ-clone/core-rule/Description");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Wonders_1 = require("../../Wonders");
+const describedRule_1 = require("../../lib/describedRule");
 const greatLibraryRules_1 = require("@civ-clone/base-wonder/lib/greatLibraryRules");
 const isBarbarian_1 = require("@civ-clone/base-civilization-barbarian/isBarbarian");
 /**
@@ -35,12 +37,21 @@ const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance, wo
             if ((0, leonardo_1.stolenAdvanceArrived)(player)) {
                 upgrade(player);
             }
+        }), new Description_1.default({
+            type: 'unit_upgrade',
+            subject: Wonders_1.LeonardosWorkshop,
+            scope: 'player',
         })),
+        // base-wonder's rule, saying what it does (civ-clone/web-renderer#1196).
         ...(0, greatLibraryRules_1.greatLibraryRules)({
             GreatLibrary: Wonders_1.GreatLibrary,
             holders: exports.GREAT_LIBRARY_HOLDERS,
             counts: (playerResearch) => !(0, isBarbarian_1.default)(playerResearch.player()),
-        }, playerResearchRegistry, wonderRegistry, requirementRegistry),
+        }, playerResearchRegistry, wonderRegistry, requirementRegistry).map((rule) => (0, describedRule_1.describedRule)(rule, new Description_1.default({
+            type: 'shared_advances',
+            subject: Wonders_1.GreatLibrary,
+            value: exports.GREAT_LIBRARY_HOLDERS,
+        }))),
     ];
 };
 exports.getRules = getRules;

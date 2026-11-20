@@ -28,6 +28,7 @@ import { BuildableInstance } from '@civ-clone/core-city-build/Buildable';
 import BuildingComplete from '@civ-clone/core-city-build/Rules/BulidingComplete';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import PlayerWorld from '@civ-clone/core-player-world/PlayerWorld';
 import { darwinsVoyageCompleteRules } from '../../lib/darwinsVoyage';
@@ -92,6 +93,11 @@ export const getRules = ({
         );
 
         engine.emit('wonder:apollo-revealed', built, cityBuild.city());
+      }),
+      new Description({
+        type: 'reveals_map',
+        subject: ApolloProgram,
+        scope: 'world',
       })
     ),
   ];

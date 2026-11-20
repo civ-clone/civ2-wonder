@@ -61,6 +61,7 @@ import Captured from '@civ-clone/core-city/Rules/Captured';
 import City from '@civ-clone/core-city/City';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import HasEmbassy from '@civ-clone/base-diplomacy/Rules/HasEmbassy';
 import Player from '@civ-clone/core-player/Player';
@@ -191,7 +192,8 @@ export const getRules = ({
                 playerResearchRegistry,
                 requirementRegistry
               )
-          )
+          ),
+          new Description({ type: 'embassy_with_all', subject: WonderType })
         )
     ),
 
@@ -200,7 +202,8 @@ export const getRules = ({
       new Criterion(built(EiffelTower)),
       new Effect((cityBuild: CityBuild): void =>
         applyEiffelTower(cityBuild.city().player())
-      )
+      ),
+      new Description({ type: 'reputation', subject: EiffelTower })
     ),
 
     // A pair meeting after the Eiffel Tower's effect was applied to one of them: the other likes it 25 better, as it

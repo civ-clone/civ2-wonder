@@ -16,6 +16,7 @@ import {
   playerHasWonder,
 } from '@civ-clone/base-wonder/lib/hasWonder';
 import CityYield from '@civ-clone/core-city/Rules/Yield';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import Happiness from '@civ-clone/base-city-yield-happiness/Happiness';
 import Yield from '@civ-clone/core-yield/Yield';
@@ -30,6 +31,11 @@ export interface CityYieldRegistries {
 //  of their owner's cities and 2 more in their own; the Cure for Cancer 1 in each of its owner's cities. Each Wonder
 //  stops once it's obsolete or its city is lost (base-wonder's `cityHasWonder` and `playerHasWonder`). The Colossus and
 //  King Richard's Crusade work per square (`Rules/City/tile-yield`).
+// The citizens each Wonder makes happy, read by its rule and by what the rule says it does (civ-clone/web-renderer#1196).
+export const hangingGardensHappy: number = 1,
+  hangingGardensCityHappy: number = 2,
+  cureForCancerHappy: number = 1;
+
 export const getRules = ({
   playerResearchRegistry = playerResearchRegistryInstance,
   requirementRegistry = requirementRegistryInstance,
@@ -43,7 +49,15 @@ export const getRules = ({
       playerResearchRegistry,
       requirementRegistry
     ),
-    new Effect((): Yield => new Happiness(1, HangingGardens.name))
+    new Effect(
+      (): Yield => new Happiness(hangingGardensHappy, HangingGardens.name)
+    ),
+    new Description({
+      type: 'happy',
+      subject: HangingGardens,
+      value: hangingGardensHappy,
+      scope: 'player',
+    })
   ),
 
   new CityYield(
@@ -54,7 +68,15 @@ export const getRules = ({
       playerResearchRegistry,
       requirementRegistry
     ),
-    new Effect((): Yield => new Happiness(2, HangingGardens.name))
+    new Effect(
+      (): Yield => new Happiness(hangingGardensCityHappy, HangingGardens.name)
+    ),
+    new Description({
+      type: 'happy',
+      subject: HangingGardens,
+      value: hangingGardensCityHappy,
+      step: 'more',
+    })
   ),
 
   new CityYield(
@@ -65,7 +87,15 @@ export const getRules = ({
       playerResearchRegistry,
       requirementRegistry
     ),
-    new Effect((): Yield => new Happiness(1, CureForCancer.name))
+    new Effect(
+      (): Yield => new Happiness(cureForCancerHappy, CureForCancer.name)
+    ),
+    new Description({
+      type: 'happy',
+      subject: CureForCancer,
+      value: cureForCancerHappy,
+      scope: 'player',
+    })
   ),
 ];
 
