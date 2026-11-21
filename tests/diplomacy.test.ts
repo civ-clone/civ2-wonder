@@ -16,7 +16,11 @@ import Civilization from '@civ-clone/core-civilization/Civilization';
 import Created from '@civ-clone/core-diplomacy/Rules/Interaction/Created';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import { EIFFEL_TOWER_APPLIED } from '../RuleIds';
+import {
+  EIFFEL_TOWER_APPLIED,
+  EIFFEL_TOWER_COMPLETE_RULE,
+  MANHATTAN_PROJECT_COMPLETE_RULE,
+} from '../RuleIds';
 import { Game } from '@civ-clone/core-game';
 import Interaction from '@civ-clone/core-diplomacy/Interaction';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
@@ -217,6 +221,45 @@ describe('diplomatic wonders', (): void => {
       expect(vendettas.map((vendetta) => vendetta.players())).eql([[owner, b]]);
     });
 
+    it('does what its descriptions say (civ-clone/web-renderer#1291)', (): void => {
+      const {
+          players: [owner, a, b],
+          interactionRegistry,
+          ruleRegistry,
+          relations,
+          complete,
+          met,
+        } = game(),
+        [rule] = ruleRegistry
+          .get(BuildingComplete)
+          .filter((rule) => rule.id() === EIFFEL_TOWER_COMPLETE_RULE),
+        described = (type: string) =>
+          rule.descriptions().find((description) => description.type === type)!;
+
+      reputation(relations).set(owner, 6);
+      met(owner, a, 80);
+      interactionRegistry.register(
+        new Vendetta(b, owner, new Never(), ruleRegistry)
+      );
+
+      complete(owner, EiffelTower);
+
+      expect(described('reputation_halved')).not.undefined;
+      expect(reputation(relations).get(owner)).equal(3);
+      expect(attitude(relations).get(a, owner)).equal(
+        80 - (described('attitude_improved').value as number)
+      );
+      expect(described('vendettas_end')).not.undefined;
+      expect(
+        interactionRegistry
+          .entries()
+          .some(
+            (interaction) =>
+              interaction instanceof Vendetta && interaction.active()
+          )
+      ).false;
+    });
+
     it('applies once to each player: again for a captor, never twice for the same one', (): void => {
       const {
         players: [owner, a, captor],
@@ -375,6 +418,29 @@ describe('diplomatic wonders', (): void => {
       expect(
         [owner, a, b, c].map((player) => reputation(relations).get(player))
       ).eql([0, 1, 2, 6]);
+    });
+
+    it('does what its description says (civ-clone/web-renderer#1291)', (): void => {
+      const {
+          players: [owner, a, b],
+          ruleRegistry,
+          relations,
+          complete,
+        } = game(),
+        [rule] = ruleRegistry
+          .get(BuildingComplete)
+          .filter((rule) => rule.id() === MANHATTAN_PROJECT_COMPLETE_RULE),
+        [description] = rule.descriptions();
+
+      reputation(relations).set(a, 4);
+      reputation(relations).set(b, 30);
+
+      complete(owner, ManhattanProject);
+
+      // Halfway back, never worse than the value, for every civilization.
+      expect(description.scope).equal('world');
+      expect(reputation(relations).get(a)).equal(2);
+      expect(reputation(relations).get(b)).equal(description.value);
     });
 
     it('leaves a player with no reputation without a record', (): void => {
