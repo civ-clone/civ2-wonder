@@ -16,7 +16,14 @@ import cityCost from '../Rules/City/cost';
 import cityTileYield from '../Rules/City/tile-yield';
 import cityYield from '../Rules/City/yield';
 import cityYieldModifier from '../Rules/City/yield-modifier';
-import diplomacy from '../lib/diplomacy';
+import diplomacy, {
+  EIFFEL_TOWER_ATTITUDE,
+  MANHATTAN_PROJECT_REPUTATION,
+} from '../lib/diplomacy';
+import {
+  EIFFEL_TOWER_COMPLETE_RULE,
+  MANHATTAN_PROJECT_COMPLETE_RULE,
+} from '../RuleIds';
 import { expect } from 'chai';
 import { greatLibraryRules } from '@civ-clone/base-wonder/lib/greatLibraryRules';
 import promotionChance from '../Rules/Unit/promotion-chance';
@@ -77,9 +84,8 @@ describe('descriptions', (): void => {
         'Oracle',
         'Pyramids',
         'SetiProgram',
-        // civ2-unit: the Great Wall as City Walls, the Manhattan Project's nuclear weapons.
+        // civ2-unit: the Great Wall as City Walls.
         'GreatWall',
-        'ManhattanProject',
         // civ2-city-happiness: Women's Suffrage as a Police Station.
         'WomensSuffrage',
       ].sort()
@@ -234,6 +240,34 @@ describe('descriptions', (): void => {
     expect(rule).to.be.instanceOf(base.constructor);
     expect(rule.id()).to.equal(base.id());
     expect(rule.priority().value()).to.equal(base.priority().value());
+  });
+
+  it('the Eiffel Tower and the Manhattan Project say what they do as they are built (civ-clone/web-renderer#1291)', (): void => {
+    const rules = diplomacy(),
+      { EiffelTower, ManhattanProject } = Wonders;
+
+    [
+      ['reputation_halved', undefined],
+      ['attitude_improved', EIFFEL_TOWER_ATTITUDE],
+      ['vendettas_end', undefined],
+    ].forEach(([type, value]) => {
+      const [[rule, description]] = only(rules, EiffelTower, type as string);
+
+      expect(rule.id()).to.equal(EIFFEL_TOWER_COMPLETE_RULE);
+      expect(description.value).to.equal(value);
+    });
+    expect(EIFFEL_TOWER_ATTITUDE).to.equal(25);
+
+    const [[manhattan, recovers]] = only(
+      rules,
+      ManhattanProject,
+      'reputation_recovers'
+    );
+
+    expect(manhattan.id()).to.equal(MANHATTAN_PROJECT_COMPLETE_RULE);
+    expect(recovers.value).to.equal(MANHATTAN_PROJECT_REPUTATION);
+    expect(recovers.scope).to.equal('world');
+    expect(MANHATTAN_PROJECT_REPUTATION).to.equal(6);
   });
 
   it("Darwin's Voyage completes the research it says", (): void => {

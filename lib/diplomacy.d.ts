@@ -21,6 +21,10 @@ export interface DiplomacyRegistries {
   turn?: Turn;
   wonderRegistry?: WonderRegistry;
 }
+/** How much every other player's attitude to the Eiffel Tower's owner improves (falls) when its effect is applied. */
+export declare const EIFFEL_TOWER_ATTITUDE = 25;
+/** The worst a reputation can be after the Manhattan Project is built (lower is better). */
+export declare const MANHATTAN_PROJECT_REPUTATION = 6;
 /** The wonders that act as an embassy with every other player, for their owner, with the rule that says so. */
 export declare const embassyWonders: [typeof Wonder, string][];
 /**

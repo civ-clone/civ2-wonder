@@ -83,6 +83,12 @@ export interface DiplomacyRegistries {
   wonderRegistry?: WonderRegistry;
 }
 
+/** How much every other player's attitude to the Eiffel Tower's owner improves (falls) when its effect is applied. */
+export const EIFFEL_TOWER_ATTITUDE = 25;
+
+/** The worst a reputation can be after the Manhattan Project is built (lower is better). */
+export const MANHATTAN_PROJECT_REPUTATION = 6;
+
 /** The wonders that act as an embassy with every other player, for their owner, with the rule that says so. */
 export const embassyWonders: [typeof Wonder, string][] = [
   [MarcoPolosEmbassy, MARCO_POLOS_EMBASSY_EMBASSY_RULE],
@@ -159,7 +165,12 @@ export const getRules = ({
       others(player).forEach((other: Player): void => {
         // An attitude is seeded when a pair meets (civ2-diplomacy), so only those that have met have one to change.
         if (attitudes.get(other, player) !== undefined) {
-          attitudes.adjust(other, player, -25, 'eiffel-tower');
+          attitudes.adjust(
+            other,
+            player,
+            -EIFFEL_TOWER_ATTITUDE,
+            'eiffel-tower'
+          );
         }
       });
 
@@ -203,7 +214,17 @@ export const getRules = ({
       new Effect((cityBuild: CityBuild): void =>
         applyEiffelTower(cityBuild.city().player())
       ),
-      new Description({ type: 'reputation', subject: EiffelTower })
+      new Description(
+        // The same as its owner captures it (`EIFFEL_TOWER_CAPTURED_RULE`), and the attitude too as a player meets it
+        //  later (`EIFFEL_TOWER_CONTACT_RULE`).
+        { type: 'reputation_halved', subject: EiffelTower },
+        {
+          type: 'attitude_improved',
+          subject: EiffelTower,
+          value: EIFFEL_TOWER_ATTITUDE,
+        },
+        { type: 'vendettas_end', subject: EiffelTower }
+      )
     ),
 
     // A pair meeting after the Eiffel Tower's effect was applied to one of them: the other likes it 25 better, as it
@@ -232,7 +253,12 @@ export const getRules = ({
             !isBarbarian(holder) &&
             attitudes.get(holder, toward) !== undefined
           ) {
-            attitudes.adjust(holder, toward, -25, 'eiffel-tower');
+            attitudes.adjust(
+              holder,
+              toward,
+              -EIFFEL_TOWER_ATTITUDE,
+              'eiffel-tower'
+            );
           }
         });
       })
@@ -258,12 +284,18 @@ export const getRules = ({
             reputations.set(
               player,
               Math.min(
-                6,
+                MANHATTAN_PROJECT_REPUTATION,
                 Math.max(0, Math.floor((reputations.get(player) + 1) / 2))
               ),
               'manhattan-project'
             );
           });
+      }),
+      new Description({
+        type: 'reputation_recovers',
+        subject: ManhattanProject,
+        value: MANHATTAN_PROJECT_REPUTATION,
+        scope: 'world',
       })
     ),
   ];
